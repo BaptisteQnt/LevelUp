@@ -18,16 +18,40 @@ class TranslateGames extends Command
     {
         // --all : dispatch sur tous
         if ($this->option('all')) {
-            Game::query()
+            $connection = config('queue.default');
+            $driver = config("queue.connections.{$connection}.driver", $connection);
+            $runSynchronously = $driver === 'sync';
+
+            $ids = Game::query()
                 ->where(function($q) {
                     $q->whereNotNull('summary')
                         ->orWhereNotNull('storyline')
                         ->orWhereNotNull('description');
                 })
-                ->pluck('id')
-                ->each(fn ($gid) => TranslateGameTexts::dispatch($gid));
+                ->pluck('id');
 
-            $this->info('Jobs de traduction dispatchés pour tous les jeux.');
+            $ids->each(function ($gid) use ($runSynchronously) {
+                if ($runSynchronously) {
+                    TranslateGameTexts::dispatchSync($gid);
+                } else {
+                    TranslateGameTexts::dispatch($gid);
+                }
+            });
+
+            if ($ids->isEmpty()) {
+                $this->info('Aucun jeu à traduire.');
+            } elseif ($runSynchronously) {
+                $this->info(sprintf(
+                    'Traductions exécutées immédiatement pour %d jeux (queue=sync).',
+                    $ids->count()
+                ));
+            } else {
+                $this->info(sprintf(
+                    'Jobs de traduction dispatchés pour %d jeux. Lance un worker (php artisan queue:work).',
+                    $ids->count()
+                ));
+            }
+
             return self::SUCCESS;
         }
 
