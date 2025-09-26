@@ -143,7 +143,10 @@ const displayText = computed(() => {
                         <div class="flex items-center justify-between">
                             <p class="font-semibold text-blue-700">@{{ comment.user.username }}</p>
                             <button
-                                v-if="auth.user && auth.user.username === comment.user.username"
+                                v-if="
+                                    auth.user &&
+                                    (auth.user.username === comment.user.username || auth.user.is_admin)
+                                "
                                 @click="deleteComment(comment.id)"
                                 class="text-sm text-red-500 hover:underline"
                             >

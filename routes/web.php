@@ -36,6 +36,10 @@ Route::middleware('auth')->group(function () {
 });
 Route::middleware('auth')->delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments.index');
+});
+
 use App\Http\Controllers\Auth\SocialiteController;
 
 Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])
