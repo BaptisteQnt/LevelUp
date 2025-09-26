@@ -73,7 +73,7 @@ class IGDBService
             'Authorization' => 'Bearer ' . $token,
         ])->withBody("
             search \"{$search}\";
-            fields name,slug,cover.url,summary,storyline;
+            fields id,name,slug,cover.url,summary,storyline;
             limit 5;
         ", 'text/plain')->post('https://api.igdb.com/v4/games');
 
