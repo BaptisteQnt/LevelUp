@@ -33,7 +33,8 @@ class GameController extends Controller
             });
 
         return Inertia::render('games/Index', [
-            'games' => $games,
+            'games'           => $games,
+            'activeLanguage'  => $lang,
         ]);
     }
 
