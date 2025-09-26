@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\IGDBService;
 use App\Models\Game;
+use App\Jobs\TranslateGameTexts;
 use Illuminate\Support\Str;
 
 class ImportGamesFromIGDB extends Command
@@ -20,7 +21,7 @@ class ImportGamesFromIGDB extends Command
             $summary = $g['summary'] ?? null;
             $storyline = $g['storyline'] ?? null;
 
-            Game::updateOrCreate(
+            $game = Game::updateOrCreate(
                 ['slug' => Str::slug($g['name'])],
                 [
                     'title' => $g['name'],
@@ -31,9 +32,13 @@ class ImportGamesFromIGDB extends Command
                     'description' => $storyline ?? $summary ?? null,
                 ]
             );
+
+            if (filled($game->summary) || filled($game->storyline) || filled($game->description)) {
+                TranslateGameTexts::dispatchSync($game->id);
+            }
         }
 
-        $this->info('Games imported successfully.');
+        $this->info('Games imported successfully (translations dispatched).');
         return Command::SUCCESS;
     }
 }
