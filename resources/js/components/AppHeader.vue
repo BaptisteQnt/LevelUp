@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -25,10 +26,12 @@ const { getInitials } = useInitials();
 const userInitials = computed(() => (user.value ? getInitials(user.value.name) : ''));
 const userHasAvatar = computed(() => Boolean(user.value?.avatar));
 
+
 const mainNavItems: NavItem[] = [
     {
         title: 'Accueil',
         href: '/',
+
     },
     {
         title: 'Jeux',
