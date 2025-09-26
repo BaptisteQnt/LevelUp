@@ -54,29 +54,43 @@ class GameController extends Controller
             }
         }
 
-        $games = $query->orderByDesc('created_at')
+        $paginator = $query->orderByDesc('created_at')
             ->paginate(9, $this->gameColumns())
             ->appends(array_filter([
                 'lang' => $lang,
                 'search' => $search,
-            ], fn ($value) => $value !== null))
-            ->through(function (Game $game) use ($lang) {
-                $texts = $game->localizedTexts($lang);
-                $body = collect([
-                    $texts['storyline'] ?? null,
-                    $texts['summary'] ?? null,
-                ])->filter()->implode("\n\n");
+            ], fn ($value) => $value !== null));
 
-                return [
-                    'id'        => $game->id,
-                    'title'     => $game->title,
-                    'slug'      => $game->slug,
-                    'cover_url' => $game->cover_url,
-                    'summary'   => $texts['summary'],
-                    'storyline' => $texts['storyline'],
-                    'description' => $body !== '' ? $body : null,
-                ];
-            });
+        $paginator->getCollection()->transform(function (Game $game) use ($lang) {
+            $texts = $game->localizedTexts($lang);
+            $body = collect([
+                $texts['storyline'] ?? null,
+                $texts['summary'] ?? null,
+            ])->filter()->implode("\n\n");
+
+            return [
+                'id'          => $game->id,
+                'title'       => $game->title,
+                'slug'        => $game->slug,
+                'cover_url'   => $game->cover_url,
+                'summary'     => $texts['summary'],
+                'storyline'   => $texts['storyline'],
+                'description' => $body !== '' ? $body : null,
+            ];
+        });
+
+        $games = [
+            'data' => $paginator->items(),
+            'links' => $paginator->linkCollection()->map(fn ($link) => [
+                'url' => $link['url'],
+                'label' => $link['label'],
+                'active' => $link['active'],
+            ])->values(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+            ],
+        ];
 
         return Inertia::render('games/Index', [
             'games'           => $games,
