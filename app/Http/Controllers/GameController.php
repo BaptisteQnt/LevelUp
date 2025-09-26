@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 class GameController extends Controller
@@ -12,7 +13,7 @@ class GameController extends Controller
         $lang = request('lang', 'en');
 
         $games = Game::orderByDesc('created_at')
-            ->get(['id', 'title', 'slug', 'cover_url', 'summary', 'storyline', 'description'])
+            ->get($this->gameColumns())
             ->map(function (Game $game) use ($lang) {
                 $texts = $game->localizedTexts($lang);
                 $body = collect([
@@ -62,6 +63,26 @@ class GameController extends Controller
             ],
             'flash' => session('success'),
         ]);
+    }
+
+    /**
+     * Retourne les colonnes disponibles pour la table games.
+     */
+    private function gameColumns(): array
+    {
+        static $columns;
+
+        if ($columns === null) {
+            $columns = ['id', 'title', 'slug', 'cover_url', 'description'];
+
+            foreach (['summary', 'storyline'] as $optionalColumn) {
+                if (Schema::hasColumn('games', $optionalColumn)) {
+                    $columns[] = $optionalColumn;
+                }
+            }
+        }
+
+        return $columns;
     }
 
 
