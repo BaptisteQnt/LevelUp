@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { type BreadcrumbItem } from '@/types';
+
 import { Head, Link as InertiaLink, router, usePage } from '@inertiajs/vue3';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 const Link = InertiaLink;
@@ -42,9 +44,11 @@ const languages: LanguageOption[] = [
     { value: 'en', label: 'English', flag: '🇬🇧' },
 ];
 
+
 const page = usePage<{ activeLanguage?: LanguageCode }>();
 
 const selectedLanguage = ref<LanguageCode>(page.props.activeLanguage ?? 'en');
+
 
 onMounted(() => {
     if (typeof window === 'undefined') {
@@ -54,6 +58,7 @@ onMounted(() => {
     const storedLanguage = window.localStorage.getItem('levelup_language');
 
     if (storedLanguage === 'fr' || storedLanguage === 'en') {
+
         if (storedLanguage !== selectedLanguage.value) {
             selectedLanguage.value = storedLanguage;
         }
@@ -67,11 +72,13 @@ watch(selectedLanguage, (language, previousLanguage) => {
         return;
     }
 
+
     if (typeof window === 'undefined') {
         return;
     }
 
     window.localStorage.setItem('levelup_language', language);
+
 
     if (page.props.activeLanguage === language) {
         return;
@@ -95,6 +102,7 @@ watch(
         selectedLanguage.value = language;
     }
 );
+
 
 const selectedLanguageConfig = computed(() => {
     return languages.find((language) => language.value === selectedLanguage.value) ?? languages[0];
