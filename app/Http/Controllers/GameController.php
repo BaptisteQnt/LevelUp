@@ -13,8 +13,9 @@ class GameController extends Controller
         $lang = request('lang', 'en');
 
         $games = Game::orderByDesc('created_at')
-            ->get($this->gameColumns())
-            ->map(function (Game $game) use ($lang) {
+            ->paginate(9, $this->gameColumns())
+            ->appends('lang', $lang)
+            ->through(function (Game $game) use ($lang) {
                 $texts = $game->localizedTexts($lang);
                 $body = collect([
                     $texts['storyline'] ?? null,

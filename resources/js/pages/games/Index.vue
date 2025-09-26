@@ -8,16 +8,33 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 const Link = InertiaLink;
 
-defineProps<{
-    games: {
-        id: number;
-        title: string;
-        slug: string;
-        cover_url: string | null;
-        summary: string | null;
-        storyline: string | null;
-        description: string | null;
-    }[];
+interface GameItem {
+    id: number;
+    title: string;
+    slug: string;
+    cover_url: string | null;
+    summary: string | null;
+    storyline: string | null;
+    description: string | null;
+}
+
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface PaginatedGames {
+    data: GameItem[];
+    links: PaginationLink[];
+    meta: {
+        current_page: number;
+        last_page: number;
+    };
+}
+
+const props = defineProps<{
+    games: PaginatedGames;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -125,6 +142,8 @@ const pageText = computed(() => {
         languageNotice: 'Pick your preferred browsing language to personalise the experience.',
     } as const;
 });
+
+const games = computed(() => props.games);
 </script>
 
 <template>
@@ -153,7 +172,7 @@ const pageText = computed(() => {
             <p class="mb-8 text-sm text-gray-500 dark:text-neutral-400">{{ pageText.languageNotice }}</p>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div v-for="game in games" :key="game.id" class="rounded-lg bg-white p-4 shadow">
+                <div v-for="game in games.data" :key="game.id" class="rounded-lg bg-white p-4 shadow">
                     <img
                         v-if="game.cover_url"
                         :src="`https:${game.cover_url.replace('t_thumb', 't_cover_big')}`"
@@ -172,6 +191,31 @@ const pageText = computed(() => {
                     </p>
                 </div>
             </div>
+
+            <nav v-if="games.meta?.last_page > 1" class="mt-10 flex justify-center">
+                <ul class="flex items-center gap-2">
+                    <li v-for="link in games.links" :key="link.label">
+                        <Link
+                            v-if="link.url"
+                            :href="link.url"
+                            preserve-state
+                            preserve-scroll
+                            class="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium transition"
+                            :class="[
+                                link.active
+                                    ? 'border-primary bg-primary text-white'
+                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800',
+                            ]"
+                            v-html="link.label"
+                        />
+                        <span
+                            v-else
+                            class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1 text-sm font-medium text-gray-400 dark:border-neutral-800 dark:text-neutral-600"
+                            v-html="link.label"
+                        />
+                    </li>
+                </ul>
+            </nav>
         </div>
     </AppHeaderLayout>
 </template>
