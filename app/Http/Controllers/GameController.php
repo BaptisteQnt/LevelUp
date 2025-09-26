@@ -2,19 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\TranslateGameTexts;
 use App\Models\Game;
+use App\Services\IGDBService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
+
 class GameController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $lang = request('lang', 'en');
+        $lang = $request->input('lang', 'en');
+        $search = trim((string) $request->input('search', ''));
+        $search = $search === '' ? null : $search;
+        $searchMessage = null;
 
-        $games = Game::orderByDesc('created_at')
+        $query = Game::query();
+
+        if ($search !== null) {
+            $this->applySearchFilter($query, $search);
+
+            if (!(clone $query)->exists()) {
+                $imported = 0;
+
+                try {
+                    /** @var IGDBService $igdb */
+                    $igdb = app(IGDBService::class);
+                    $imported = $this->importGamesFromIGDB($igdb, $search);
+                } catch (Throwable $exception) {
+                    report($exception);
+                    $searchMessage = "Impossible de contacter IGDB pour cette recherche.";
+                }
+
+                $query = Game::query();
+                $this->applySearchFilter($query, $search);
+
+                if ((clone $query)->exists()) {
+                    if ($imported > 0) {
+                        $searchMessage = $imported === 1
+                            ? 'Un jeu a été importé depuis IGDB.'
+                            : "{$imported} jeux ont été importés depuis IGDB.";
+                    }
+                } elseif ($searchMessage === null) {
+                    $searchMessage = "Aucun jeu n'a été trouvé pour \"{$search}\".";
+                }
+            }
+        }
+
+        $games = $query->orderByDesc('created_at')
             ->paginate(9, $this->gameColumns())
-            ->appends('lang', $lang)
+            ->appends(array_filter([
+                'lang' => $lang,
+                'search' => $search,
+            ], fn ($value) => $value !== null))
             ->through(function (Game $game) use ($lang) {
                 $texts = $game->localizedTexts($lang);
                 $body = collect([
@@ -36,6 +81,8 @@ class GameController extends Controller
         return Inertia::render('games/Index', [
             'games'           => $games,
             'activeLanguage'  => $lang,
+            'searchQuery'     => $search,
+            'searchMessage'   => $searchMessage,
         ]);
     }
 
@@ -87,5 +134,52 @@ class GameController extends Controller
         return $columns;
     }
 
+    private function applySearchFilter(Builder $query, string $search): void
+    {
+        $slug = Str::slug($search);
 
+        $query->where(function (Builder $builder) use ($search, $slug) {
+            $builder->where('title', 'like', "%{$search}%");
+
+            if ($slug !== '') {
+                $builder->orWhere('slug', 'like', "%{$slug}%");
+            }
+        });
+    }
+
+    private function importGamesFromIGDB(IGDBService $igdb, string $search): int
+    {
+        $imported = 0;
+
+        foreach ($igdb->fetchGames($search) as $gameData) {
+            if (!isset($gameData['name'])) {
+                continue;
+            }
+
+            $slug = Str::slug($gameData['name']);
+
+            $game = Game::updateOrCreate(
+                ['slug' => $slug],
+                [
+                    'title'       => $gameData['name'],
+                    'twitch_id'   => $gameData['id'] ?? null,
+                    'cover_url'   => data_get($gameData, 'cover.url'),
+                    'summary'     => $gameData['summary'] ?? null,
+                    'storyline'   => $gameData['storyline'] ?? null,
+                    'description' => $gameData['storyline']
+                        ?? $gameData['summary']
+                        ?? null,
+                ]
+            );
+
+            if (filled($game->summary) || filled($game->storyline) || filled($game->description)) {
+                TranslateGameTexts::dispatchSync($game->id);
+            }
+
+            $imported++;
+        }
+
+        return $imported;
+    }
 }
+

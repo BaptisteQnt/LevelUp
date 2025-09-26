@@ -35,6 +35,8 @@ interface PaginatedGames {
 
 const props = defineProps<{
     games: PaginatedGames;
+    searchQuery?: string | null;
+    searchMessage?: string | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -62,9 +64,11 @@ const languages: LanguageOption[] = [
 ];
 
 
-const page = usePage<{ activeLanguage?: LanguageCode }>();
+const page = usePage<{ activeLanguage?: LanguageCode; searchQuery?: string | null }>();
 
 const selectedLanguage = ref<LanguageCode>(page.props.activeLanguage ?? 'en');
+const searchTerm = ref(props.searchQuery ?? '');
+const isSearching = ref(false);
 
 
 onMounted(() => {
@@ -101,11 +105,14 @@ watch(selectedLanguage, (language, previousLanguage) => {
         return;
     }
 
-    router.visit(route('games.index', { lang: language }), {
+    router.visit(route('games.index', {
+        lang: language,
+        search: searchTerm.value.trim() === '' ? undefined : searchTerm.value.trim(),
+    }), {
         preserveState: true,
         preserveScroll: true,
         replace: true,
-        only: ['games', 'activeLanguage'],
+        only: ['games', 'activeLanguage', 'searchQuery', 'searchMessage'],
     });
 });
 
@@ -144,6 +151,55 @@ const pageText = computed(() => {
 });
 
 const games = computed(() => props.games);
+const searchMessage = computed(() => props.searchMessage ?? null);
+const hasActiveSearch = computed(() => searchTerm.value.trim().length > 0);
+
+watch(
+    () => props.searchQuery,
+    (value) => {
+        if ((value ?? '') === searchTerm.value) {
+            return;
+        }
+
+        searchTerm.value = value ?? '';
+    }
+);
+
+const submitSearch = () => {
+    const query = searchTerm.value.trim();
+    const normalized = query === '' ? null : query;
+    const currentQuery = props.searchQuery ?? null;
+
+    if (normalized === currentQuery) {
+        return;
+    }
+
+    isSearching.value = true;
+
+    router.visit(
+        route('games.index', {
+            lang: selectedLanguage.value,
+            search: normalized ?? undefined,
+        }),
+        {
+            preserveScroll: true,
+            replace: true,
+            only: ['games', 'activeLanguage', 'searchQuery', 'searchMessage'],
+            onFinish: () => {
+                isSearching.value = false;
+            },
+        }
+    );
+};
+
+const clearSearch = () => {
+    if (searchTerm.value === '') {
+        return;
+    }
+
+    searchTerm.value = '';
+    submitSearch();
+};
 </script>
 
 <template>
@@ -170,6 +226,46 @@ const games = computed(() => props.games);
                 </div>
             </div>
             <p class="mb-8 text-sm text-gray-500 dark:text-neutral-400">{{ pageText.languageNotice }}</p>
+
+            <form class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center" @submit.prevent="submitSearch">
+                <label class="sr-only" for="game-search">Rechercher un jeu</label>
+                <input
+                    id="game-search"
+                    v-model="searchTerm"
+                    type="search"
+                    name="search"
+                    :placeholder="selectedLanguage.value === 'fr' ? 'Rechercher un jeu…' : 'Search a game…'"
+                    class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                    :disabled="isSearching"
+                />
+                <div class="flex items-center gap-2">
+                    <button
+                        type="submit"
+                        class="inline-flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                        :disabled="isSearching"
+                    >
+                        {{ selectedLanguage.value === 'fr' ? 'Rechercher' : 'Search' }}
+                    </button>
+                    <button
+                        v-if="hasActiveSearch"
+                        type="button"
+                        class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        @click="clearSearch"
+                    >
+                        {{ selectedLanguage.value === 'fr' ? 'Réinitialiser' : 'Reset' }}
+                    </button>
+                </div>
+            </form>
+
+            <p v-if="searchMessage" class="mb-6 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary dark:border-primary/40 dark:bg-primary/15">
+                {{ searchMessage }}
+            </p>
+            <p
+                v-else-if="hasActiveSearch && games.data.length === 0"
+                class="mb-6 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 dark:border-neutral-700 dark:text-neutral-300"
+            >
+                {{ selectedLanguage.value === 'fr' ? 'Aucun jeu ne correspond à votre recherche pour le moment.' : 'No game matches your search yet.' }}
+            </p>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div v-for="game in games.data" :key="game.id" class="rounded-lg bg-white p-4 shadow">
