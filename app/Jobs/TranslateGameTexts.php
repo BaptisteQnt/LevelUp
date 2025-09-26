@@ -20,13 +20,23 @@ class TranslateGameTexts implements ShouldQueue
     {
         $game = Game::findOrFail($this->gameId);
 
-        $srcSummary   = (string) ($game->summary   ?? '');
-        $srcStoryline = (string) ($game->storyline ?? '');
+        $storyline = trim((string) ($game->storyline ?? ''));
+        $summary   = trim((string) ($game->summary ?? ''));
 
-        $src = trim($srcStoryline . "\n\n" . $srcSummary);
-        if ($src === '') return;
+        if ($storyline === '' && $summary === '') {
+            $summary = trim((string) ($game->description ?? ''));
+        }
 
-        $hash = hash('sha256', $src);
+        $payload = [
+            'storyline' => $storyline !== '' ? $storyline : null,
+            'summary'   => $summary !== '' ? $summary : null,
+        ];
+
+        if ($payload['storyline'] === null && $payload['summary'] === null) {
+            return; // rien à traduire
+        }
+
+        $hash = hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
         $existing = GameTranslation::where('game_id', $game->id)
             ->where('lang', 'fr')
             ->first();
@@ -35,22 +45,34 @@ class TranslateGameTexts implements ShouldQueue
             return; // déjà à jour
         }
 
-        // Sécurité : DeepL accepte de longs textes, mais on segmente à ~4000 chars
-        $chunks = $this->chunkText($src, 4000);
-        $translated = collect($chunks)->map(
-            fn($c) => $translator->translate($c, 'fr', 'en')
-        )->implode("\n");
+        $translatedStoryline = $this->translateField($payload['storyline'], $translator);
+        $translatedSummary   = $this->translateField($payload['summary'], $translator);
 
         GameTranslation::updateOrCreate(
             ['game_id' => $game->id, 'lang' => 'fr'],
             [
-                // choix simple : tout dans summary FR, ou split si tu veux
-                'summary'     => $translated,
-                'storyline'   => null,
+                'summary'     => $translatedSummary,
+                'storyline'   => $translatedStoryline,
                 'provider'    => class_basename($translator),
                 'source_hash' => $hash,
             ]
         );
+    }
+
+    private function translateField(?string $text, Translator $translator): ?string
+    {
+        if ($text === null) {
+            return null;
+        }
+
+        $chunks = $this->chunkText($text, 4000);
+        if (empty($chunks)) {
+            return null;
+        }
+
+        return collect($chunks)->map(
+            fn ($chunk) => $translator->translate($chunk, 'fr', 'en')
+        )->implode("\n");
     }
 
     private function chunkText(string $text, int $limit): array

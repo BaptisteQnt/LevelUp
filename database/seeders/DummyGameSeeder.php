@@ -16,7 +16,9 @@ class DummyGameSeeder extends Seeder
             [
                 'title'       => 'Starfield',
                 'cover_url'   => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co2x9k.jpg',
-                'description' => "Starfield is a next-generation role-playing game set among the stars. Create any character you want and explore with unparalleled freedom as you embark on an epic journey to answer humanity’s greatest mystery."
+                'storyline'   => 'In the year 2330 humanity ventures beyond the solar system as part of the spacefaring organization Constellation.',
+                'summary'     => 'Starfield is a next-generation role-playing game set among the stars. Create any character you want and explore with unparalleled freedom as you embark on an epic journey to answer humanity’s greatest mystery.',
+                'description' => 'In the year 2330 humanity ventures beyond the solar system as part of the spacefaring organization Constellation.'
             ]
         );
 
@@ -25,7 +27,9 @@ class DummyGameSeeder extends Seeder
             [
                 'title'       => 'ELDEN RING',
                 'cover_url'   => 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1x3h.jpg',
-                'description' => "Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between."
+                'storyline'   => 'Guided by the Greater Will, the Tarnished traverse the Lands Between to seek the shattered fragments of the Elden Ring.',
+                'summary'     => 'Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.',
+                'description' => 'Guided by the Greater Will, the Tarnished traverse the Lands Between to seek the shattered fragments of the Elden Ring.'
             ]
         );
     }

@@ -20,7 +20,9 @@ class TranslateGames extends Command
         if ($this->option('all')) {
             Game::query()
                 ->where(function($q) {
-                    $q->whereNotNull('summary')->orWhereNotNull('storyline');
+                    $q->whereNotNull('summary')
+                        ->orWhereNotNull('storyline')
+                        ->orWhereNotNull('description');
                 })
                 ->pluck('id')
                 ->each(fn ($gid) => TranslateGameTexts::dispatch($gid));
