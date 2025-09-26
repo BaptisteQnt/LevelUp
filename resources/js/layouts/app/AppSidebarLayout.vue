@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
+import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
@@ -16,10 +17,15 @@ withDefaults(defineProps<Props>(), {
 
 <template>
     <AppShell variant="sidebar">
-        <AppSidebar />
-        <AppContent variant="sidebar">
-            <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <slot />
-        </AppContent>
+        <div class="flex min-h-screen w-full flex-col">
+            <AppHeader />
+            <div class="flex flex-1">
+                <AppSidebar />
+                <AppContent variant="sidebar">
+                    <AppSidebarHeader :breadcrumbs="breadcrumbs" />
+                    <slot />
+                </AppContent>
+            </div>
+        </div>
     </AppShell>
 </template>

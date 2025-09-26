@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import AppLogo from '@/components/AppLogo.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import type { BreadcrumbItem, NavItem, SharedData } from '@/types';
+
+import UserMenuContent from '@/components/UserMenuContent.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useInitials } from '@/composables/useInitials';
+import type { BreadcrumbItem, NavItem, SharedData, User } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Menu, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -15,12 +20,18 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const page = usePage<SharedData>();
-const user = computed(() => page.props.auth.user);
+const user = computed<User | null>(() => page.props.auth.user);
+const { getInitials } = useInitials();
+
+const userInitials = computed(() => (user.value ? getInitials(user.value.name) : ''));
+const userHasAvatar = computed(() => Boolean(user.value?.avatar));
+
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Accueil',
         href: '/',
+
     },
     {
         title: 'Jeux',
@@ -86,16 +97,22 @@ const closeMobileMenu = () => {
                 >
                     Connexion
                 </Link>
-                <Link
-                    v-else
-                    method="post"
-                    as="button"
-                    type="button"
-                    :href="route('logout')"
-                    class="rounded-lg bg-red-500 px-4 py-2 font-semibold text-white shadow hover:bg-red-500/90"
-                >
-                    Déconnexion
-                </Link>
+                <DropdownMenu v-else>
+                    <DropdownMenuTrigger as-child>
+                        <button
+                            type="button"
+                            class="flex items-center gap-2 rounded-full border border-sidebar-border/80 p-1.5 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <Avatar class="size-8">
+                                <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
+                                <AvatarFallback>{{ userInitials }}</AvatarFallback>
+                            </Avatar>
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent class="min-w-64" align="end" :side-offset="12">
+                        <UserMenuContent :user="user" />
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </nav>
         </div>
 
@@ -123,17 +140,35 @@ const closeMobileMenu = () => {
                 >
                     Connexion
                 </Link>
-                <Link
-                    v-else
-                    method="post"
-                    as="button"
-                    type="button"
-                    :href="route('logout')"
-                    class="rounded-lg bg-red-500 px-3 py-2 text-center font-semibold text-white hover:bg-red-500/90"
-                    @click="closeMobileMenu"
-                >
-                    Déconnexion
-                </Link>
+                <div v-else class="flex flex-col gap-3 rounded-lg border border-sidebar-border/70 p-3">
+                    <div class="flex items-center gap-3">
+                        <Avatar class="size-10">
+                            <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
+                            <AvatarFallback class="text-base">{{ userInitials }}</AvatarFallback>
+                        </Avatar>
+                        <div class="flex flex-col text-sm">
+                            <span class="font-semibold text-neutral-900 dark:text-neutral-100">{{ user?.name }}</span>
+                            <span class="text-neutral-500 dark:text-neutral-400">{{ user?.email }}</span>
+                        </div>
+                    </div>
+                    <Link
+                        :href="route('profile.edit')"
+                        class="rounded-lg border border-sidebar-border/80 px-3 py-2 text-center font-medium text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        @click="closeMobileMenu"
+                    >
+                        Mon profil
+                    </Link>
+                    <Link
+                        method="post"
+                        as="button"
+                        type="button"
+                        :href="route('logout')"
+                        class="rounded-lg bg-red-500 px-3 py-2 text-center font-semibold text-white hover:bg-red-500/90"
+                        @click="closeMobileMenu"
+                    >
+                        Déconnexion
+                    </Link>
+                </div>
             </div>
         </div>
 
