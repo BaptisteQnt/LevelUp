@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useForm, usePage, Head, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 // Props du jeu et des flash messages
 const props = defineProps<{
@@ -7,6 +8,8 @@ const props = defineProps<{
         id: number;
         title: string;
         cover_url: string | null;
+        summary: string | null;
+        storyline: string | null;
         description: string | null;
         comments: {
             id: number;
@@ -44,6 +47,18 @@ const deleteComment = (id: number) => {
         });
     }
 };
+
+const displayText = computed(() => {
+    const parts = [props.game.storyline, props.game.summary, props.game.description].filter(
+        (value): value is string => Boolean(value && value.trim())
+    );
+
+    if (!parts.length) {
+        return null;
+    }
+
+    return parts.join('\n\n');
+});
 </script>
 
 <template>
@@ -70,8 +85,8 @@ const deleteComment = (id: number) => {
         />
 
         <!-- Description -->
-        <p class="text-lg text-gray-700 mb-10">
-            {{ game.description ?? 'Aucune description disponible.' }}
+        <p class="text-lg text-gray-700 mb-10 whitespace-pre-line">
+            {{ displayText ?? 'Aucune description disponible.' }}
         </p>
 
         <!-- Zone de commentaires -->

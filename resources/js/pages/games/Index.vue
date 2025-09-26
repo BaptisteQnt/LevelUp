@@ -10,6 +10,8 @@ defineProps<{
         title: string;
         slug: string;
         cover_url: string | null;
+        summary: string | null;
+        storyline: string | null;
         description: string | null;
     }[];
 }>();
@@ -33,7 +35,9 @@ defineProps<{
                     {{ game.title }}
                 </inertia-link>
 
-                <p class="text-sm text-gray-600" v-if="game.description">{{ game.description }}</p>
+                <p class="text-sm text-gray-600" v-if="game.storyline || game.summary || game.description">
+                    {{ game.storyline ?? game.summary ?? game.description }}
+                </p>
             </div>
         </div>
     </div>

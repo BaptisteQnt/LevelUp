@@ -17,13 +17,18 @@ class ImportGamesFromIGDB extends Command
         $games = $igdb->fetchGames($this->argument('search'));
 
         foreach ($games as $g) {
+            $summary = $g['summary'] ?? null;
+            $storyline = $g['storyline'] ?? null;
+
             Game::updateOrCreate(
                 ['slug' => Str::slug($g['name'])],
                 [
                     'title' => $g['name'],
                     'twitch_id' => $g['id'],
                     'cover_url' => $g['cover']['url'] ?? null,
-                    'description' => $g['summary'] ?? null,
+                    'summary' => $summary,
+                    'storyline' => $storyline,
+                    'description' => $storyline ?? $summary ?? null,
                 ]
             );
         }

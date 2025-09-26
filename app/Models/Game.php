@@ -15,6 +15,8 @@ class Game extends Model
         'twitch_id',
         'cover_url',
         'description',
+        'summary',
+        'storyline',
     ];
 
     public function comments()
@@ -24,15 +26,47 @@ class Game extends Model
 
     public function translatedDescription(string $lang = 'en'): ?string
     {
-        if ($lang !== 'fr') {
-            return $this->description;
+        $texts = $this->localizedTexts($lang);
+
+        $parts = array_filter([
+            $texts['storyline'] ?? null,
+            $texts['summary'] ?? null,
+        ], fn ($value) => filled($value));
+
+        return empty($parts) ? null : implode("\n\n", $parts);
+    }
+
+    /**
+     * Retourne les textes (storyline/summary) adaptés à la langue.
+     */
+    public function localizedTexts(string $lang = 'en'): array
+    {
+        if ($lang === 'fr') {
+            $tr = \App\Models\GameTranslation::where('game_id', $this->id)
+                ->where('lang', 'fr')
+                ->first();
+
+            if ($tr && (filled($tr->storyline) || filled($tr->summary))) {
+                return [
+                    'storyline' => filled($tr->storyline) ? $tr->storyline : null,
+                    'summary'   => filled($tr->summary) ? $tr->summary : null,
+                ];
+            }
         }
 
-        $tr = \App\Models\GameTranslation::where('game_id', $this->id)
-            ->where('lang', 'fr')
-            ->first();
+        if (filled($this->storyline) || filled($this->summary)) {
+            return [
+                'storyline' => filled($this->storyline) ? $this->storyline : null,
+                'summary'   => filled($this->summary) ? $this->summary : null,
+            ];
+        }
 
-        return $tr?->summary ?: $this->description;
+        $fallback = filled($this->description) ? trim((string) $this->description) : null;
+
+        return [
+            'storyline' => null,
+            'summary'   => $fallback,
+        ];
     }
 
 }
