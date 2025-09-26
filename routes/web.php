@@ -10,23 +10,30 @@ use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+$dashboardPage = function (Request $request) {
+    $user = $request->user();
 
-Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $request) {
-    $user = $request->user()->refresh();
-    $subscription = $user->subscription('default');
+    if ($user) {
+        $user->refresh();
+    }
+
+    $subscription = $user?->subscription('default');
 
     return Inertia::render('Dashboard', [
         'isSubscribed'  => $subscription?->active() ?? false,
         'onGracePeriod' => $subscription?->onGracePeriod() ?? false,
         'endsAt'        => optional($subscription?->ends_at)->format('d/m/Y'),
     ]);
-})->name('dashboard');
+};
 
-Route::get('/games', [GameController::class, 'index'])->name('games.index');
-Route::get('/games/{slug}', [GameController::class, 'show'])->name('games.show');
+Route::get('/', $dashboardPage)->name('home');
+
+Route::middleware(['auth', 'verified'])->get('/dashboard', $dashboardPage)->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/games', [GameController::class, 'index'])->name('games.index');
+    Route::get('/games/{slug}', [GameController::class, 'show'])->name('games.show');
+});
 Route::middleware('auth')->delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
 use App\Http\Controllers\Auth\SocialiteController;
@@ -59,6 +66,9 @@ Route::post('/stripe/webhook', [WebhookController::class, 'handleWebhook']);
 
 Route::middleware(['auth','verified','subscribed'])
     ->get('/premium', fn() => Inertia::render('Premium/Index'));
+
+Route::get('/information', fn () => Inertia::render('Information'))->name('information');
+Route::get('/presentation', fn () => Inertia::render('Presentation'))->name('presentation');
 
 
 require __DIR__.'/settings.php';
