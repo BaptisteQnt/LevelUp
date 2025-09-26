@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link as InertiaLink } from '@inertiajs/vue3';
+
+import { Head, Link as InertiaLink, router, usePage } from '@inertiajs/vue3';
+
 import { computed, onMounted, ref, watch } from 'vue';
 
 const Link = InertiaLink;
@@ -42,7 +44,11 @@ const languages: LanguageOption[] = [
     { value: 'en', label: 'English', flag: '🇬🇧' },
 ];
 
-const selectedLanguage = ref<LanguageCode>('fr');
+
+const page = usePage<{ activeLanguage?: LanguageCode }>();
+
+const selectedLanguage = ref<LanguageCode>(page.props.activeLanguage ?? 'en');
+
 
 onMounted(() => {
     if (typeof window === 'undefined') {
@@ -52,17 +58,51 @@ onMounted(() => {
     const storedLanguage = window.localStorage.getItem('levelup_language');
 
     if (storedLanguage === 'fr' || storedLanguage === 'en') {
-        selectedLanguage.value = storedLanguage;
+
+        if (storedLanguage !== selectedLanguage.value) {
+            selectedLanguage.value = storedLanguage;
+        }
+    } else {
+        window.localStorage.setItem('levelup_language', selectedLanguage.value);
     }
 });
 
-watch(selectedLanguage, (language) => {
+watch(selectedLanguage, (language, previousLanguage) => {
+    if (language === previousLanguage) {
+        return;
+    }
+
+
     if (typeof window === 'undefined') {
         return;
     }
 
     window.localStorage.setItem('levelup_language', language);
+
+
+    if (page.props.activeLanguage === language) {
+        return;
+    }
+
+    router.visit(route('games.index', { lang: language }), {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+        only: ['games', 'activeLanguage'],
+    });
 });
+
+watch(
+    () => page.props.activeLanguage,
+    (language) => {
+        if (!language || language === selectedLanguage.value) {
+            return;
+        }
+
+        selectedLanguage.value = language;
+    }
+);
+
 
 const selectedLanguageConfig = computed(() => {
     return languages.find((language) => language.value === selectedLanguage.value) ?? languages[0];
@@ -120,7 +160,10 @@ const pageText = computed(() => {
                         alt=""
                         class="mb-4 h-auto w-full rounded"
                     />
-                    <Link :href="route('games.show', game.slug)" class="text-xl font-semibold text-blue-600 hover:underline">
+                    <Link
+                        :href="route('games.show', { slug: game.slug, lang: selectedLanguage })"
+                        class="text-xl font-semibold text-blue-600 hover:underline"
+                    >
                         {{ game.title }}
                     </Link>
 
