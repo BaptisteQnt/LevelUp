@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { Link as InertiaLink } from '@inertiajs/vue3';
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link as InertiaLink } from '@inertiajs/vue3';
 
 const Link = InertiaLink;
 
@@ -15,30 +16,43 @@ defineProps<{
         description: string | null;
     }[];
 }>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Accueil',
+        href: '/',
+    },
+    {
+        title: 'Jeux',
+        href: '/games',
+    },
+];
 </script>
 
 <template>
     <Head title="Games" />
 
-    <div class="max-w-5xl mx-auto px-4 py-10">
-        <h1 class="text-3xl font-bold mb-8">Liste des jeux</h1>
+    <AppHeaderLayout :breadcrumbs="breadcrumbs">
+        <div class="mx-auto max-w-5xl px-4 py-10">
+            <h1 class="mb-8 text-3xl font-bold">Liste des jeux</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="game in games" :key="game.id" class="bg-white shadow p-4 rounded-lg">
-                <img
-                    v-if="game.cover_url"
-                    :src="`https:${game.cover_url.replace('t_thumb', 't_cover_big')}`"
-                    alt=""
-                    class="w-full h-auto rounded mb-4"
-                />
-                <inertia-link :href="route('games.show', game.slug)" class="text-xl font-semibold text-blue-600 hover:underline">
-                    {{ game.title }}
-                </inertia-link>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div v-for="game in games" :key="game.id" class="rounded-lg bg-white p-4 shadow">
+                    <img
+                        v-if="game.cover_url"
+                        :src="`https:${game.cover_url.replace('t_thumb', 't_cover_big')}`"
+                        alt=""
+                        class="mb-4 h-auto w-full rounded"
+                    />
+                    <Link :href="route('games.show', game.slug)" class="text-xl font-semibold text-blue-600 hover:underline">
+                        {{ game.title }}
+                    </Link>
 
-                <p class="text-sm text-gray-600" v-if="game.storyline || game.summary || game.description">
-                    {{ game.storyline ?? game.summary ?? game.description }}
-                </p>
+                    <p class="text-sm text-gray-600" v-if="game.storyline || game.summary || game.description">
+                        {{ game.storyline ?? game.summary ?? game.description }}
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
+    </AppHeaderLayout>
 </template>
