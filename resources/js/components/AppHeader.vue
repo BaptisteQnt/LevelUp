@@ -6,6 +6,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
+import { useActiveLink } from '@/composables/useActiveLink';
 import type { BreadcrumbItem, NavItem, SharedData, User } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Menu, X } from 'lucide-vue-next';
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
 const page = usePage<SharedData>();
 const user = computed<User | null>(() => page.props.auth.user);
 const { getInitials } = useInitials();
+const { isActive } = useActiveLink();
 
 const userInitials = computed(() => (user.value ? getInitials(user.value.name) : ''));
 const userHasAvatar = computed(() => Boolean(user.value?.avatar));
@@ -46,8 +48,6 @@ const mainNavItems: NavItem[] = [
         href: '/presentation',
     },
 ];
-
-const isCurrentRoute = (href: string) => page.url === href;
 
 const mobileMenuOpen = ref(false);
 
@@ -86,7 +86,7 @@ const closeMobileMenu = () => {
                     :key="item.title"
                     :href="item.href"
                     class="transition hover:text-primary"
-                    :class="isCurrentRoute(item.href) ? 'text-primary' : 'text-neutral-600 dark:text-neutral-300'"
+                    :class="(item.isActive ?? isActive(item.href)) ? 'text-primary' : 'text-neutral-600 dark:text-neutral-300'"
                 >
                     {{ item.title }}
                 </Link>
@@ -127,7 +127,7 @@ const closeMobileMenu = () => {
                     :key="item.title"
                     :href="item.href"
                     class="rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                    :class="isCurrentRoute(item.href) ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'text-neutral-700 dark:text-neutral-200'"
+                    :class="(item.isActive ?? isActive(item.href)) ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'text-neutral-700 dark:text-neutral-200'"
                     @click="closeMobileMenu"
                 >
                     {{ item.title }}
