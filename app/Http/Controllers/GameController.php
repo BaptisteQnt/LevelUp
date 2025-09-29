@@ -102,7 +102,10 @@ class GameController extends Controller
 
     public function show(string $slug): \Inertia\Response
     {
-        $game = Game::where('slug', $slug)->firstOrFail();
+        $game = Game::where('slug', $slug)
+            ->withCount('ratings')
+            ->withAvg('ratings', 'rating')
+            ->firstOrFail();
         $lang = request('lang', 'en');
 
         $texts = $game->localizedTexts($lang);
@@ -110,6 +113,14 @@ class GameController extends Controller
             $texts['storyline'] ?? null,
             $texts['summary'] ?? null,
         ])->filter()->implode("\n\n");
+
+        $userRating = null;
+
+        if ($requestUser = request()->user()) {
+            $userRating = $game->ratings()
+                ->where('user_id', $requestUser->id)
+                ->value('rating');
+        }
 
         return Inertia::render('games/Show', [
             'game' => [
@@ -123,6 +134,13 @@ class GameController extends Controller
                                     ->with('user:id,username')
                                     ->latest()
                                     ->get(),
+                'ratings'     => [
+                    'average' => $game->ratings_avg_rating !== null
+                        ? round((float) $game->ratings_avg_rating, 1)
+                        : null,
+                    'count'   => $game->ratings_count,
+                    'user'    => $userRating !== null ? (int) $userRating : null,
+                ],
             ],
             'flash' => session('success'),
         ]);
