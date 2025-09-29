@@ -22,6 +22,7 @@ const props = defineProps<{
         }[];
         ratings: {
             enabled: boolean;
+
             average: number | null;
             count: number;
             user: number | null;
@@ -105,6 +106,7 @@ watch(
         userRating.value = value.user ?? null;
     },
     { deep: true }
+
 );
 
 const stars = computed(() => Array.from({ length: 10 }, (_, index) => index + 1));
@@ -113,6 +115,7 @@ const ratingSummary = computed(() => {
     if (!props.game.ratings.enabled) {
         return 'Les notes ne sont pas disponibles pour le moment.';
     }
+
 
     const { average, count } = props.game.ratings;
 
@@ -127,6 +130,7 @@ const ratingSummary = computed(() => {
 
 const setRating = (value: number) => {
     if (!props.game.ratings.enabled || !auth.user) {
+
         return;
     }
 
@@ -187,18 +191,22 @@ const setRating = (value: number) => {
                             v-for="star in stars"
                             :key="star"
                             type="button"
+
                             :disabled="
                                 ratingForm.processing || !auth.user || !game.ratings.enabled
                             "
+
                             @click="setRating(star)"
                             class="text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             :class="[
                                 userRating !== null && star <= userRating
                                     ? 'text-yellow-400'
                                     : 'text-gray-300',
+
                                 auth.user && game.ratings.enabled
                                     ? 'hover:text-yellow-500'
                                     : 'cursor-not-allowed opacity-70',
+
                             ]"
                         >
                             <span aria-hidden="true">★</span>
@@ -210,6 +218,7 @@ const setRating = (value: number) => {
                     Les notes seront disponibles après la mise à jour de la base de données.
                 </p>
                 <p v-else-if="auth.user" class="mt-2 text-sm text-gray-600">
+
                     <span v-if="userRating !== null">Ta note : {{ userRating }}/10</span>
                     <span v-else>Clique sur une étoile pour noter ce jeu.</span>
                 </p>

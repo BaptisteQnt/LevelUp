@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
+
 class GameRatingController extends Controller
 {
     public function store(Request $request, Game $game): RedirectResponse
@@ -18,6 +19,7 @@ class GameRatingController extends Controller
                 'rating' => 'Les notes ne sont pas disponibles pour le moment. Veuillez réessayer plus tard.',
             ]);
         }
+
 
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:10'],
