@@ -14,6 +14,7 @@ use App\Http\Controllers\TipController;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use App\Models\Announcement;
+use App\Models\Game;
 
 
 $dashboardPage = function (Request $request) {
@@ -31,6 +32,20 @@ $dashboardPage = function (Request $request) {
         ->orderByDesc('created_at')
         ->first();
 
+    $recentGames = Game::query()
+        ->latest('created_at')
+        ->take(5)
+        ->get(['id', 'title', 'slug', 'cover_url', 'created_at'])
+        ->map(fn (Game $game) => [
+            'id'          => $game->id,
+            'title'       => $game->title,
+            'slug'        => $game->slug,
+            'cover_url'   => $game->cover_url,
+            'searched_at' => optional($game->created_at)->toIso8601String(),
+        ])
+        ->values()
+        ->all();
+
     return Inertia::render('Dashboard', [
         'isSubscribed'  => $subscription?->active() ?? false,
         'onGracePeriod' => $subscription?->onGracePeriod() ?? false,
@@ -42,6 +57,7 @@ $dashboardPage = function (Request $request) {
             'published_at' => $announcement->published_at?->toIso8601String(),
             'author'       => $announcement->user?->only(['id', 'name', 'username']),
         ] : null,
+        'recentGames'   => $recentGames,
     ]);
 };
 
