@@ -18,12 +18,25 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface SiteAnnouncement {
+    id: number;
+    title: string;
+    content: string;
+    published_at: string | null;
+    author: {
+        id: number;
+        name: string | null;
+        username: string;
+    } | null;
+}
+
 export interface SharedData extends PageProps {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    announcement?: SiteAnnouncement | null;
 }
 
 export interface User {

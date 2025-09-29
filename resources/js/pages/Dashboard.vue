@@ -3,7 +3,7 @@ import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { MessageSquare, ShieldCheck } from 'lucide-vue-next';
+import { MessageSquare, Megaphone, ShieldCheck } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 
 interface AdminAction {
@@ -37,7 +37,23 @@ const adminLinks = computed<AdminAction[]>(() => [
         href: route('admin.powers.index'),
         icon: ShieldCheck,
     },
+    {
+        title: 'Annonces',
+        description: 'Publie des messages importants pour informer toute la communauté.',
+        href: route('admin.announcements.index'),
+        icon: Megaphone,
+    },
 ]);
+
+const currentAnnouncement = computed(() => page.props.announcement ?? null);
+
+const formatDate = (value: string | null | undefined) =>
+    value
+        ? new Intl.DateTimeFormat('fr-FR', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+          }).format(new Date(value))
+        : null;
 </script>
 
 <template>
@@ -45,6 +61,34 @@ const adminLinks = computed<AdminAction[]>(() => [
 
     <AppHeaderLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-6 rounded-xl p-4 md:p-6">
+            <section
+                v-if="currentAnnouncement"
+                class="space-y-3 rounded-xl border border-blue-200 bg-blue-50 p-6 text-blue-900 shadow-sm dark:border-blue-800/60 dark:bg-blue-950/60 dark:text-blue-100"
+            >
+                <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+                            Information du site
+                        </p>
+                        <h2 class="text-lg font-semibold">{{ currentAnnouncement.title }}</h2>
+                    </div>
+                    <div class="text-xs text-blue-700/80 dark:text-blue-200/80">
+                        <p v-if="currentAnnouncement.author">
+                            Posté par
+                            <span class="font-semibold">
+                                {{ currentAnnouncement.author.name ?? currentAnnouncement.author.username }}
+                            </span>
+                        </p>
+                        <p v-if="formatDate(currentAnnouncement.published_at)">
+                            {{ formatDate(currentAnnouncement.published_at) }}
+                        </p>
+                    </div>
+                </header>
+                <p class="whitespace-pre-line text-sm leading-relaxed text-blue-800 dark:text-blue-100/90">
+                    {{ currentAnnouncement.content }}
+                </p>
+            </section>
+
             <section
                 v-if="isAdmin"
                 class="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"

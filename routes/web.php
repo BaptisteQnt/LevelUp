@@ -4,6 +4,7 @@ use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PowersController;
 use App\Http\Controllers\GameRatingController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TipController;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
+use App\Models\Announcement;
 
 
 $dashboardPage = function (Request $request) {
@@ -23,10 +25,23 @@ $dashboardPage = function (Request $request) {
 
     $subscription = $user?->subscription('default');
 
+    $announcement = Announcement::query()
+        ->with(['user:id,name,username'])
+        ->orderByDesc('published_at')
+        ->orderByDesc('created_at')
+        ->first();
+
     return Inertia::render('Dashboard', [
         'isSubscribed'  => $subscription?->active() ?? false,
         'onGracePeriod' => $subscription?->onGracePeriod() ?? false,
         'endsAt'        => optional($subscription?->ends_at)->format('d/m/Y'),
+        'announcement'  => $announcement ? [
+            'id'           => $announcement->id,
+            'title'        => $announcement->title,
+            'content'      => $announcement->content,
+            'published_at' => $announcement->published_at?->toIso8601String(),
+            'author'       => $announcement->user?->only(['id', 'name', 'username']),
+        ] : null,
     ]);
 };
 
@@ -49,6 +64,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/admin/powers/{user}', [PowersController::class, 'update'])->name('admin.powers.update');
     Route::patch('/admin/comments/{comment}/approve', [CommentController::class, 'approve'])->name('admin.comments.approve');
     Route::patch('/admin/tips/{tip}/approve', [TipController::class, 'approve'])->name('admin.tips.approve');
+    Route::get('/admin/announcements', [AnnouncementController::class, 'index'])->name('admin.announcements.index');
+    Route::post('/admin/announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
+    Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
 });
 
 use App\Http\Controllers\Auth\SocialiteController;
