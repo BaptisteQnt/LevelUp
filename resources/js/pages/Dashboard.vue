@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { fetchDashboardStats, type DashboardStats } from '@/lib/stats';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { MessageSquare, Megaphone, ShieldCheck } from 'lucide-vue-next';
-import { computed, type Component } from 'vue';
+import { computed, onMounted, ref, type Component } from 'vue';
 
 interface AdminAction {
     title: string;
@@ -58,6 +58,30 @@ const adminLinks = computed<AdminAction[]>(() => [
 
 const currentAnnouncement = computed(() => page.props.announcement ?? null);
 
+const stats = ref<DashboardStats | null>(null);
+const isStatsLoading = ref(false);
+const statsError = ref<string | null>(null);
+
+const loadStats = async () => {
+    try {
+        isStatsLoading.value = true;
+        statsError.value = null;
+        stats.value = await fetchDashboardStats();
+    } catch (error) {
+        console.error('Unable to load dashboard statistics', error);
+        statsError.value =
+            error instanceof Error
+                ? error.message
+                : 'Une erreur est survenue lors du chargement des statistiques.';
+    } finally {
+        isStatsLoading.value = false;
+    }
+};
+
+onMounted(() => {
+    void loadStats();
+});
+
 const formatDate = (value: string | null | undefined) =>
     value
         ? new Intl.DateTimeFormat('fr-FR', {
@@ -65,6 +89,14 @@ const formatDate = (value: string | null | undefined) =>
               timeStyle: 'short',
           }).format(new Date(value))
         : null;
+
+const formatNumber = (value: number | null | undefined) =>
+    value == null ? '—' : value.toLocaleString('fr-FR');
+
+const formatAverage = (value: number | null | undefined) =>
+    value == null
+        ? '—'
+        : value.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 </script>
 
 <template>
@@ -191,16 +223,199 @@ const formatDate = (value: string | null | undefined) =>
                         </div>
                     </div>
                 </section>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
+                <section
+                    class="flex h-full flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                    <header class="space-y-1">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-primary">Vue d'ensemble</p>
+                        <h2 class="text-lg font-semibold">Dynamique de la bibliothèque</h2>
+                        <p class="text-sm text-gray-600 dark:text-neutral-400">
+                            Surveille la croissance des jeux référencés et l’activité des évaluations.
+                        </p>
+                    </header>
+
+                    <div class="flex flex-1 flex-col gap-4">
+                        <div
+                            v-if="isStatsLoading"
+                            class="flex flex-1 items-center justify-center text-sm text-gray-600 dark:text-neutral-400"
+                        >
+                            Chargement des statistiques…
+                        </div>
+                        <div
+                            v-else-if="statsError"
+                            class="flex flex-1 items-center justify-center text-center text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ statsError }}
+                        </div>
+                        <dl
+                            v-else-if="stats"
+                            class="grid flex-1 gap-4 sm:grid-cols-2"
+                        >
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">Jeux disponibles</dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.games.total) }}
+                                </dd>
+                            </div>
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">
+                                    Jeux ayant reçu une note
+                                </dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.games.rated_total) }}
+                                </dd>
+                            </div>
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">Notes partagées</dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.ratings.total) }}
+                                </dd>
+                            </div>
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">
+                                    Note moyenne globale
+                                </dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatAverage(stats.ratings.average) }} / 5
+                                </dd>
+                            </div>
+                        </dl>
+                        <p
+                            v-else
+                            class="text-sm text-gray-600 dark:text-neutral-400"
+                        >
+                            Aucune statistique disponible pour le moment.
+                        </p>
+                    </div>
+                </section>
+                <section
+                    class="flex h-full flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                    <header class="space-y-1">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-primary">Engagement</p>
+                        <h2 class="text-lg font-semibold">Contributions de la communauté</h2>
+                        <p class="text-sm text-gray-600 dark:text-neutral-400">
+                            Évalue la participation des membres à travers les astuces, commentaires et inscriptions.
+                        </p>
+                    </header>
+
+                    <div class="flex flex-1 flex-col gap-4">
+                        <div
+                            v-if="isStatsLoading"
+                            class="flex flex-1 items-center justify-center text-sm text-gray-600 dark:text-neutral-400"
+                        >
+                            Chargement des statistiques…
+                        </div>
+                        <div
+                            v-else-if="statsError"
+                            class="flex flex-1 items-center justify-center text-center text-sm text-red-600 dark:text-red-400"
+                        >
+                            {{ statsError }}
+                        </div>
+                        <dl
+                            v-else-if="stats"
+                            class="grid flex-1 gap-4 sm:grid-cols-2"
+                        >
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">
+                                    Commentaires approuvés
+                                </dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.comments.approved_total) }}
+                                </dd>
+                            </div>
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">
+                                    Astuces approuvées
+                                </dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.tips.approved_total) }}
+                                </dd>
+                            </div>
+                            <div class="rounded-lg bg-gray-50 p-4 text-sm dark:bg-neutral-800/50 sm:col-span-2">
+                                <dt class="text-xs font-medium uppercase text-gray-600 dark:text-neutral-400">Membres inscrits</dt>
+                                <dd class="text-lg font-semibold text-gray-900 dark:text-neutral-100">
+                                    {{ formatNumber(stats.users.total) }}
+                                </dd>
+                            </div>
+                        </dl>
+                        <p
+                            v-else
+                            class="text-sm text-gray-600 dark:text-neutral-400"
+                        >
+                            Les contributions apparaîtront ici dès que la communauté partage du contenu.
+                        </p>
+                    </div>
+                </section>
             </div>
-            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border md:min-h-min">
-                <PlaceholderPattern />
-            </div>
+            <section
+                class="flex min-h-[100vh] flex-1 flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:min-h-min"
+            >
+                <header class="space-y-1">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-primary">Synthèse</p>
+                    <h2 class="text-lg font-semibold">Vue générale de la plateforme</h2>
+                    <p class="text-sm text-gray-600 dark:text-neutral-400">
+                        Un aperçu rapide des indicateurs clés pour suivre l’évolution de LevelUp.
+                    </p>
+                </header>
+
+                <div class="flex flex-1 flex-col gap-4">
+                    <div
+                        v-if="isStatsLoading"
+                        class="flex flex-1 items-center justify-center text-sm text-gray-600 dark:text-neutral-400"
+                    >
+                        Chargement des statistiques…
+                    </div>
+                    <div
+                        v-else-if="statsError"
+                        class="flex flex-1 items-center justify-center text-center text-sm text-red-600 dark:text-red-400"
+                    >
+                        {{ statsError }}
+                    </div>
+                    <div v-else-if="stats" class="flex flex-1 flex-col justify-between gap-6">
+                        <p class="text-sm leading-relaxed text-gray-700 dark:text-neutral-300">
+                            La bibliothèque compte
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.games.total) }} jeux référencés
+                            </span>
+                            dont
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.games.rated_total) }} titres évalués
+                            </span>
+                            par la communauté.
+                        </p>
+                        <p class="text-sm leading-relaxed text-gray-700 dark:text-neutral-300">
+                            Les membres ont déposé
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.ratings.total) }} notes
+                            </span>
+                            pour une moyenne globale de
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatAverage(stats.ratings.average) }} / 5
+                            </span>
+                            , complétées par
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.comments.approved_total) }} commentaires
+                            </span>
+                            et
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.tips.approved_total) }} astuces
+                            </span>
+                            déjà partagés.
+                        </p>
+                        <p class="text-sm leading-relaxed text-gray-700 dark:text-neutral-300">
+                            La communauté s’agrandit chaque jour avec
+                            <span class="font-semibold text-gray-900 dark:text-neutral-100">
+                                {{ formatNumber(stats.users.total) }} membres inscrits
+                            </span>
+                            prêts à découvrir de nouvelles expériences de jeu.
+                        </p>
+                    </div>
+                    <p v-else class="text-sm text-gray-600 dark:text-neutral-400">
+                        Revenez plus tard pour consulter les indicateurs du tableau de bord.
+                    </p>
+                </div>
+            </section>
         </div>
     </AppHeaderLayout>
 </template>
