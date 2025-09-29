@@ -13,7 +13,15 @@ interface AdminAction {
     icon: Component;
 }
 
-const page = usePage<SharedData>();
+interface RecentDashboardGame {
+    id: number;
+    title: string;
+    slug: string;
+    cover_url: string | null;
+    searched_at: string | null;
+}
+
+const page = usePage<SharedData & { recentGames?: RecentDashboardGame[] }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,6 +31,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const isAdmin = computed(() => page.props.auth.user?.is_admin ?? false);
+
+const recentGames = computed(() => page.props.recentGames ?? []);
+const hasRecentGames = computed(() => recentGames.value.length > 0);
 
 const adminLinks = computed<AdminAction[]>(() => [
     {
@@ -124,9 +135,62 @@ const formatDate = (value: string | null | undefined) =>
             </section>
 
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
+                <section
+                    class="flex h-full flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                    <header class="space-y-1">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+                            Tendances de la communauté
+                        </p>
+                        <h2 class="text-lg font-semibold">Derniers jeux recherchés</h2>
+                        <p class="text-sm text-gray-600 dark:text-neutral-400">
+                            Voici les titres récemment découverts par les membres de LevelUp.
+                        </p>
+                    </header>
+
+                    <div class="flex flex-1 flex-col justify-between gap-4">
+                        <ul v-if="hasRecentGames" class="flex flex-1 flex-col gap-4">
+                            <li v-for="game in recentGames" :key="game.id">
+                                <Link
+                                    :href="route('games.show', game.slug)"
+                                    class="group flex items-center gap-4 rounded-lg border border-gray-200 p-3 transition hover:border-primary/60 hover:bg-primary/5 dark:border-neutral-800 dark:hover:border-primary/60"
+                                >
+                                    <div
+                                        class="relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 text-xs font-semibold uppercase text-gray-500 dark:bg-neutral-800 dark:text-neutral-400"
+                                    >
+                                        <img
+                                            v-if="game.cover_url"
+                                            :src="game.cover_url"
+                                            :alt="`Jaquette de ${game.title}`"
+                                            class="size-full object-cover"
+                                            loading="lazy"
+                                        />
+                                        <span v-else>{{ game.title.slice(0, 2) }}</span>
+                                    </div>
+                                    <div class="flex flex-1 flex-col gap-1">
+                                        <span class="text-sm font-semibold text-gray-900 transition group-hover:text-primary dark:text-neutral-100">
+                                            {{ game.title }}
+                                        </span>
+                                        <span class="text-xs text-gray-600 dark:text-neutral-400">
+                                            Recherché le
+                                            <span class="font-medium">{{ formatDate(game.searched_at) ?? '—' }}</span>
+                                        </span>
+                                    </div>
+                                    <span class="text-xs font-semibold text-primary transition group-hover:underline">Voir</span>
+                                </Link>
+                            </li>
+                        </ul>
+                        <p v-else class="text-sm text-gray-600 dark:text-neutral-400">
+                            Aucune recherche récente pour le moment. Explorez la bibliothèque de jeux pour inspirer la communauté !
+                        </p>
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-neutral-500">
+                            <span>Mis à jour en continu</span>
+                            <Link :href="route('games.index')" class="font-semibold text-primary transition hover:underline">
+                                Voir la bibliothèque
+                            </Link>
+                        </div>
+                    </div>
+                </section>
                 <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     <PlaceholderPattern />
                 </div>
