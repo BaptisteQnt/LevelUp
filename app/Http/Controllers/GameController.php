@@ -102,10 +102,17 @@ class GameController extends Controller
 
     public function show(string $slug): \Inertia\Response
     {
-        $game = Game::where('slug', $slug)
-            ->withCount('ratings')
-            ->withAvg('ratings', 'rating')
-            ->firstOrFail();
+
+        $hasRatingsTable = Schema::hasTable('game_ratings');
+
+        $gameQuery = Game::where('slug', $slug);
+
+        if ($hasRatingsTable) {
+            $gameQuery->withCount('ratings')->withAvg('ratings', 'rating');
+        }
+
+        $game = $gameQuery->firstOrFail();
+
         $lang = request('lang', 'en');
 
         $texts = $game->localizedTexts($lang);
@@ -116,7 +123,9 @@ class GameController extends Controller
 
         $userRating = null;
 
-        if ($requestUser = request()->user()) {
+
+        if ($hasRatingsTable && ($requestUser = request()->user())) {
+
             $userRating = $game->ratings()
                 ->where('user_id', $requestUser->id)
                 ->value('rating');
@@ -135,10 +144,15 @@ class GameController extends Controller
                                     ->latest()
                                     ->get(),
                 'ratings'     => [
-                    'average' => $game->ratings_avg_rating !== null
+
+                    'enabled' => $hasRatingsTable,
+                    'average' => ($hasRatingsTable && $game->ratings_avg_rating !== null)
                         ? round((float) $game->ratings_avg_rating, 1)
                         : null,
-                    'count'   => $game->ratings_count,
+                    'count'   => $hasRatingsTable
+                        ? (int) ($game->ratings_count ?? 0)
+                        : 0,
+
                     'user'    => $userRating !== null ? (int) $userRating : null,
                 ],
             ],

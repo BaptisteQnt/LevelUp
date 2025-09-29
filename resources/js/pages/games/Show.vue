@@ -21,6 +21,8 @@ const props = defineProps<{
             };
         }[];
         ratings: {
+            enabled: boolean;
+
             average: number | null;
             count: number;
             user: number | null;
@@ -83,22 +85,38 @@ const displayText = computed(() => {
 });
 
 const ratingForm = useForm({
-    rating: props.game.ratings.user ?? null,
+    rating: props.game.ratings.enabled ? props.game.ratings.user ?? null : null,
 });
 
-const userRating = ref<number | null>(props.game.ratings.user ?? null);
+const userRating = ref<number | null>(
+    props.game.ratings.enabled ? props.game.ratings.user ?? null : null
+);
 
 watch(
-    () => props.game.ratings.user,
+    () => props.game.ratings,
     (value) => {
-        ratingForm.rating = value ?? null;
-        userRating.value = value ?? null;
-    }
+        if (!value.enabled) {
+            ratingForm.rating = null;
+            userRating.value = null;
+
+            return;
+        }
+
+        ratingForm.rating = value.user ?? null;
+        userRating.value = value.user ?? null;
+    },
+    { deep: true }
+
 );
 
 const stars = computed(() => Array.from({ length: 10 }, (_, index) => index + 1));
 
 const ratingSummary = computed(() => {
+    if (!props.game.ratings.enabled) {
+        return 'Les notes ne sont pas disponibles pour le moment.';
+    }
+
+
     const { average, count } = props.game.ratings;
 
     if (!count || average === null) {
@@ -111,7 +129,8 @@ const ratingSummary = computed(() => {
 });
 
 const setRating = (value: number) => {
-    if (!auth.user) {
+    if (!props.game.ratings.enabled || !auth.user) {
+
         return;
     }
 
@@ -172,14 +191,22 @@ const setRating = (value: number) => {
                             v-for="star in stars"
                             :key="star"
                             type="button"
-                            :disabled="ratingForm.processing || !auth.user"
+
+                            :disabled="
+                                ratingForm.processing || !auth.user || !game.ratings.enabled
+                            "
+
                             @click="setRating(star)"
                             class="text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                             :class="[
                                 userRating !== null && star <= userRating
                                     ? 'text-yellow-400'
                                     : 'text-gray-300',
-                                auth.user ? 'hover:text-yellow-500' : 'cursor-not-allowed opacity-70',
+
+                                auth.user && game.ratings.enabled
+                                    ? 'hover:text-yellow-500'
+                                    : 'cursor-not-allowed opacity-70',
+
                             ]"
                         >
                             <span aria-hidden="true">★</span>
@@ -187,7 +214,11 @@ const setRating = (value: number) => {
                         </button>
                     </div>
                 </div>
-                <p v-if="auth.user" class="mt-2 text-sm text-gray-600">
+                <p v-if="!game.ratings.enabled" class="mt-2 text-sm text-gray-500">
+                    Les notes seront disponibles après la mise à jour de la base de données.
+                </p>
+                <p v-else-if="auth.user" class="mt-2 text-sm text-gray-600">
+
                     <span v-if="userRating !== null">Ta note : {{ userRating }}/10</span>
                     <span v-else>Clique sur une étoile pour noter ce jeu.</span>
                 </p>
