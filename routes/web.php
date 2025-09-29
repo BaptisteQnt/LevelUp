@@ -7,6 +7,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\GameRatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TipController;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 
@@ -37,6 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/games/{game}/rating', [GameRatingController::class, 'store'])->name('games.rating.store');
 });
 Route::middleware('auth')->delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+Route::middleware('auth')->post('/tips', [TipController::class, 'store'])->name('tips.store');
+Route::middleware('auth')->delete('/tips/{tip}', [TipController::class, 'destroy'])->name('tips.destroy');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments.index');
