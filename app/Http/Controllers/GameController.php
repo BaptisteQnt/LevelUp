@@ -143,6 +143,10 @@ class GameController extends Controller
                                     ->with('user:id,username')
                                     ->latest()
                                     ->get(),
+                'tips'        => $game->tips()
+                                    ->with('user:id,username')
+                                    ->latest()
+                                    ->get(),
                 'ratings'     => [
 
                     'enabled' => $hasRatingsTable,

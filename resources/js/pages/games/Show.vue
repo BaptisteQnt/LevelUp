@@ -20,6 +20,13 @@ const props = defineProps<{
                 username: string;
             };
         }[];
+        tips: {
+            id: number;
+            content: string;
+            user: {
+                username: string;
+            };
+        }[];
         ratings: {
             enabled: boolean;
 
@@ -55,6 +62,11 @@ const form = useForm({
     game_id: props.game.id,
 });
 
+const tipForm = useForm({
+    content: '',
+    game_id: props.game.id,
+});
+
 // Envoi du commentaire
 const submit = () => {
     form.post(route('comments.store'), {
@@ -63,10 +75,25 @@ const submit = () => {
     });
 };
 
+const submitTip = () => {
+    tipForm.post(route('tips.store'), {
+        preserveScroll: true,
+        onSuccess: () => tipForm.reset('content'),
+    });
+};
+
 // Suppression d’un commentaire
 const deleteComment = (id: number) => {
     if (confirm('Supprimer ce commentaire ?')) {
         router.delete(route('comments.destroy', id), {
+            preserveScroll: true,
+        });
+    }
+};
+
+const deleteTip = (id: number) => {
+    if (confirm('Supprimer cette astuce ?')) {
+        router.delete(route('tips.destroy', id), {
             preserveScroll: true,
         });
     }
@@ -228,6 +255,60 @@ const setRating = (value: number) => {
                 <p v-if="ratingForm.errors.rating" class="mt-2 text-sm text-red-500">
                     {{ ratingForm.errors.rating }}
                 </p>
+            </div>
+
+            <!-- Astuces des joueurs -->
+            <div class="mt-8">
+                <h2 class="mb-1 text-xl font-bold">Astuces de la communauté</h2>
+                <p class="mb-4 text-sm text-gray-600">
+                    Partage tes conseils pour aider les nouveaux joueurs à bien débuter.
+                </p>
+
+                <form v-if="auth.user" @submit.prevent="submitTip" class="mb-6">
+                    <textarea
+                        v-model="tipForm.content"
+                        rows="3"
+                        class="w-full resize-none rounded border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Propose une astuce pour commencer le jeu..."
+                    ></textarea>
+                    <div class="mt-2 flex items-center justify-between">
+                        <button
+                            type="submit"
+                            :disabled="tipForm.processing"
+                            class="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 disabled:opacity-50"
+                        >
+                            Partager
+                        </button>
+                        <p class="text-sm text-red-500" v-if="tipForm.errors.content">
+                            {{ tipForm.errors.content }}
+                        </p>
+                    </div>
+                </form>
+                <p v-else class="mb-4 text-sm text-gray-500">Connecte-toi pour partager une astuce.</p>
+
+                <div v-if="game.tips.length">
+                    <div
+                        v-for="tip in game.tips"
+                        :key="tip.id"
+                        class="mb-4 rounded border border-purple-100 bg-purple-50 p-4"
+                    >
+                        <div class="flex items-center justify-between">
+                            <p class="font-semibold text-purple-700">@{{ tip.user.username }}</p>
+                            <button
+                                v-if="
+                                    auth.user &&
+                                    (auth.user.username === tip.user.username || auth.user.is_admin)
+                                "
+                                @click="deleteTip(tip.id)"
+                                class="text-sm text-purple-600 hover:underline"
+                            >
+                                Supprimer
+                            </button>
+                        </div>
+                        <p class="mt-1 text-gray-800">{{ tip.content }}</p>
+                    </div>
+                </div>
+                <p v-else class="text-gray-500">Aucune astuce pour le moment.</p>
             </div>
 
             <!-- Zone de commentaires -->
