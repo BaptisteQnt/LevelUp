@@ -140,10 +140,12 @@ class GameController extends Controller
                 'storyline'   => $texts['storyline'],
                 'description' => $body !== '' ? $body : null,
                 'comments'    => $game->comments()
+                                    ->approved()
                                     ->with('user:id,username')
                                     ->latest()
                                     ->get(),
                 'tips'        => $game->tips()
+                                    ->approved()
                                     ->with('user:id,username')
                                     ->latest()
                                     ->get(),

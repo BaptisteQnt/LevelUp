@@ -22,8 +22,8 @@ const mainNavItems = computed<NavItem[]>(() => {
 
     if (page.props.auth.user?.is_admin) {
         items.push({
-            title: 'Commentaires',
-            href: route('admin.comments.index'),
+            title: 'Modération',
+            href: route('admin.moderation.index'),
             icon: MessageSquare,
         });
     }

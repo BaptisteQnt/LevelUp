@@ -4,6 +4,7 @@ use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\GameRatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SubscriptionController;
@@ -42,7 +43,9 @@ Route::middleware('auth')->post('/tips', [TipController::class, 'store'])->name(
 Route::middleware('auth')->delete('/tips/{tip}', [TipController::class, 'destroy'])->name('tips.destroy');
 
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/comments', [CommentController::class, 'index'])->name('admin.comments.index');
+    Route::get('/admin/moderation', ModerationController::class)->name('admin.moderation.index');
+    Route::patch('/admin/comments/{comment}/approve', [CommentController::class, 'approve'])->name('admin.comments.approve');
+    Route::patch('/admin/tips/{tip}/approve', [TipController::class, 'approve'])->name('admin.tips.approve');
 });
 
 use App\Http\Controllers\Auth\SocialiteController;

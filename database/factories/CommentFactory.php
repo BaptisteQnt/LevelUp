@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
+use App\Models\Comment;
 use App\Models\Game;
-use App\Models\Tip;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Tip>
+ * @extends Factory<Comment>
  */
-class TipFactory extends Factory
+class CommentFactory extends Factory
 {
-    protected $model = Tip::class;
+    protected $model = Comment::class;
 
     public function definition(): array
     {
