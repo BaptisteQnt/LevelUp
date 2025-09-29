@@ -2,7 +2,7 @@
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 // Props du jeu et des flash messages
 const props = defineProps<{
@@ -20,6 +20,12 @@ const props = defineProps<{
                 username: string;
             };
         }[];
+        ratings: {
+            enabled: boolean;
+            average: number | null;
+            count: number;
+            user: number | null;
+        };
     };
     flash?: string | null;
 }>();
@@ -76,6 +82,64 @@ const displayText = computed(() => {
 
     return parts.join('\n\n');
 });
+
+const ratingForm = useForm({
+    rating: props.game.ratings.enabled ? props.game.ratings.user ?? null : null,
+});
+
+const userRating = ref<number | null>(
+    props.game.ratings.enabled ? props.game.ratings.user ?? null : null
+);
+
+watch(
+    () => props.game.ratings,
+    (value) => {
+        if (!value.enabled) {
+            ratingForm.rating = null;
+            userRating.value = null;
+
+            return;
+        }
+
+        ratingForm.rating = value.user ?? null;
+        userRating.value = value.user ?? null;
+    },
+    { deep: true }
+);
+
+const stars = computed(() => Array.from({ length: 10 }, (_, index) => index + 1));
+
+const ratingSummary = computed(() => {
+    if (!props.game.ratings.enabled) {
+        return 'Les notes ne sont pas disponibles pour le moment.';
+    }
+
+    const { average, count } = props.game.ratings;
+
+    if (!count || average === null) {
+        return 'Aucune note pour le moment.';
+    }
+
+    const suffix = count > 1 ? 'notes' : 'note';
+
+    return `Moyenne : ${average}/10 (${count} ${suffix})`;
+});
+
+const setRating = (value: number) => {
+    if (!props.game.ratings.enabled || !auth.user) {
+        return;
+    }
+
+    ratingForm.rating = value;
+    userRating.value = value;
+
+    ratingForm.post(route('games.rating.store', props.game.id), {
+        preserveScroll: true,
+        onError: () => {
+            userRating.value = props.game.ratings.user ?? null;
+        },
+    });
+};
 </script>
 
 <template>
@@ -106,6 +170,56 @@ const displayText = computed(() => {
             <p class="mb-10 whitespace-pre-line text-lg text-gray-700">
                 {{ displayText ?? 'Aucune description disponible.' }}
             </p>
+
+            <!-- Notes des utilisateurs -->
+            <div class="mb-10 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold">Note des joueurs</h2>
+                        <p class="text-sm text-gray-600">{{ ratingSummary }}</p>
+                    </div>
+                    <div
+                        class="flex items-center gap-1"
+                        role="group"
+                        aria-label="Noter ce jeu sur dix"
+                    >
+                        <button
+                            v-for="star in stars"
+                            :key="star"
+                            type="button"
+                            :disabled="
+                                ratingForm.processing || !auth.user || !game.ratings.enabled
+                            "
+                            @click="setRating(star)"
+                            class="text-2xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            :class="[
+                                userRating !== null && star <= userRating
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-300',
+                                auth.user && game.ratings.enabled
+                                    ? 'hover:text-yellow-500'
+                                    : 'cursor-not-allowed opacity-70',
+                            ]"
+                        >
+                            <span aria-hidden="true">★</span>
+                            <span class="sr-only">Attribuer la note {{ star }}/10</span>
+                        </button>
+                    </div>
+                </div>
+                <p v-if="!game.ratings.enabled" class="mt-2 text-sm text-gray-500">
+                    Les notes seront disponibles après la mise à jour de la base de données.
+                </p>
+                <p v-else-if="auth.user" class="mt-2 text-sm text-gray-600">
+                    <span v-if="userRating !== null">Ta note : {{ userRating }}/10</span>
+                    <span v-else>Clique sur une étoile pour noter ce jeu.</span>
+                </p>
+                <p v-else class="mt-2 text-sm text-gray-500">
+                    Connecte-toi pour attribuer une note.
+                </p>
+                <p v-if="ratingForm.errors.rating" class="mt-2 text-sm text-red-500">
+                    {{ ratingForm.errors.rating }}
+                </p>
+            </div>
 
             <!-- Zone de commentaires -->
             <div class="mt-8">

@@ -4,6 +4,7 @@ use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\GameRatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\SubscriptionController;
 use Laravel\Cashier\Http\Controllers\WebhookController;
@@ -33,6 +34,7 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', $dashboardPage)->name
 Route::middleware('auth')->group(function () {
     Route::get('/games', [GameController::class, 'index'])->name('games.index');
     Route::get('/games/{slug}', [GameController::class, 'show'])->name('games.show');
+    Route::post('/games/{game}/rating', [GameRatingController::class, 'store'])->name('games.rating.store');
 });
 Route::middleware('auth')->delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 

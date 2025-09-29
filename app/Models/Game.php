@@ -24,6 +24,11 @@ class Game extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function ratings()
+    {
+        return $this->hasMany(GameRating::class);
+    }
+
     public function translatedDescription(string $lang = 'en'): ?string
     {
         $texts = $this->localizedTexts($lang);
