@@ -29,7 +29,29 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+
+        if (! $request->user()->subscribed('default')) {
+            unset($validated['display_name_color'], $validated['display_alias'], $validated['profile_border_style']);
+        }
+
+        if (array_key_exists('display_name_color', $validated)) {
+            $validated['display_name_color'] = $validated['display_name_color'] !== null && $validated['display_name_color'] !== ''
+                ? strtolower($validated['display_name_color'])
+                : null;
+        }
+
+        if (array_key_exists('display_alias', $validated)) {
+            $validated['display_alias'] = $validated['display_alias'] !== null && $validated['display_alias'] !== ''
+                ? trim($validated['display_alias'])
+                : null;
+        }
+
+        if (($validated['profile_border_style'] ?? null) === 'none') {
+            $validated['profile_border_style'] = null;
+        }
+
+        $request->user()->fill($validated);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

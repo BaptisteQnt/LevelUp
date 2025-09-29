@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -9,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
+import { premiumBorderOptions, resolveBorderClass } from '@/lib/premium';
 import { type BreadcrumbItem, type SharedData, type User } from '@/types';
 
 interface Props {
@@ -28,6 +30,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const page = usePage<SharedData>();
 const user = page.props.auth.user as User;
 
+const borderOptions = premiumBorderOptions;
+
 const form = useForm({
     name: user.name ?? '',
     username: user.username ?? '',
@@ -38,6 +42,18 @@ const form = useForm({
     cp: user.cp ?? '',
     country: user.country ?? '',
     age: user.age ?? '',
+    display_name_color: user.display_name_color ?? '',
+    display_alias: user.display_alias ?? '',
+    profile_border_style: user.profile_border_style ?? 'none',
+});
+
+const previewColor = computed(() => form.display_name_color || '#1f2937');
+
+const selectedBorderClass = computed(() => resolveBorderClass(form.profile_border_style));
+
+const previewInitials = computed(() => {
+    const source = user.name || user.username;
+    return (source ?? 'U').slice(0, 2).toUpperCase();
 });
 
 
@@ -103,6 +119,92 @@ const submit = () => {
                         <Label for="age">Age</Label>
                         <Input id="age" class="mt-1 block w-full" v-model="form.age" type="number" placeholder="Age" />
                         <InputError class="mt-2" :message="form.errors.age" />
+                    </div>
+
+
+                    <div
+                        v-if="user.is_subscribed"
+                        class="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4"
+                    >
+                        <div>
+                            <h3 class="text-base font-semibold text-primary">Personnalisation premium</h3>
+                            <p class="text-sm text-muted-foreground">
+                                Ajoutez une touche unique à votre profil visible par toute la communauté.
+                            </p>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="display_alias">Pseudo affiché à côté de votre nom</Label>
+                            <Input
+                                id="display_alias"
+                                class="mt-1 block w-full"
+                                v-model="form.display_alias"
+                                placeholder="Ex. Le Stratège"
+                            />
+                            <InputError class="mt-2" :message="form.errors.display_alias" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="display_name_color">Couleur de votre nom</Label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <Input
+                                    id="display_name_color"
+                                    class="mt-1 w-36"
+                                    v-model="form.display_name_color"
+                                    placeholder="#6366f1"
+                                />
+                                <input
+                                    type="color"
+                                    class="h-10 w-12 cursor-pointer rounded border border-sidebar-border/80"
+                                    :value="form.display_name_color || '#6366f1'"
+                                    @input="form.display_name_color = ($event.target as HTMLInputElement).value"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    @click="form.display_name_color = ''"
+                                >
+                                    Réinitialiser
+                                </Button>
+                            </div>
+                            <p class="text-xs text-muted-foreground">
+                                Aperçu :
+                                <span class="font-semibold" :style="{ color: previewColor }">
+                                    {{ user.name }}
+                                </span>
+                                <span v-if="form.display_alias" class="text-muted-foreground">
+                                    ({{ form.display_alias }})
+                                </span>
+                            </p>
+                            <InputError class="mt-2" :message="form.errors.display_name_color" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="profile_border_style">Bordure de votre avatar</Label>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <select
+                                    id="profile_border_style"
+                                    v-model="form.profile_border_style"
+                                    class="mt-1 rounded-lg border border-sidebar-border/70 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary dark:bg-neutral-900"
+                                >
+                                    <option
+                                        v-for="option in borderOptions"
+                                        :key="option.value"
+                                        :value="option.value"
+                                    >
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+                                <div
+                                    class="flex size-12 items-center justify-center rounded-full bg-white font-semibold uppercase text-neutral-500 shadow-sm dark:bg-neutral-900"
+                                    :class="selectedBorderClass"
+                                >
+                                    {{ previewInitials }}
+                                </div>
+                            </div>
+                            <InputError class="mt-2" :message="form.errors.profile_border_style" />
+                        </div>
                     </div>
 
 

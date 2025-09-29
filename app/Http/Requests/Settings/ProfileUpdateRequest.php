@@ -25,6 +25,22 @@ class ProfileUpdateRequest extends FormRequest
             'cp' => ['nullable', 'string', 'max:10'],
             'country' => ['nullable', 'string', 'max:100'],
             'age' => ['required', 'integer', 'min:1', 'max:120'],
+            'display_name_color' => [
+                'nullable',
+                Rule::prohibitedIf(fn () => ! $this->user()->subscribed('default')),
+                'regex:/^#(?:[0-9a-fA-F]{3}){1,2}$/',
+            ],
+            'display_alias' => [
+                'nullable',
+                Rule::prohibitedIf(fn () => ! $this->user()->subscribed('default')),
+                'string',
+                'max:30',
+            ],
+            'profile_border_style' => [
+                'nullable',
+                Rule::prohibitedIf(fn () => ! $this->user()->subscribed('default')),
+                Rule::in(['none', 'starlight', 'neon', 'ember']),
+            ],
         ];
     }
 }

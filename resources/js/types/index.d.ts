@@ -44,7 +44,17 @@ export interface User {
     name: string;
     email: string;
     username: string;
-    avatar?: string;
+    avatar?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+    cp?: string | null;
+    country?: string | null;
+    age?: number | null;
+    display_name_color?: string | null;
+    display_alias?: string | null;
+    profile_border_style?: string | null;
+    is_subscribed?: boolean;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;

@@ -141,12 +141,12 @@ class GameController extends Controller
                 'description' => $body !== '' ? $body : null,
                 'comments'    => $game->comments()
                                     ->approved()
-                                    ->with('user:id,username')
+                                    ->with('user:id,username,display_name_color,display_alias,profile_border_style')
                                     ->latest()
                                     ->get(),
                 'tips'        => $game->tips()
                                     ->approved()
-                                    ->with('user:id,username')
+                                    ->with('user:id,username,display_name_color,display_alias,profile_border_style')
                                     ->latest()
                                     ->get(),
                 'ratings'     => [

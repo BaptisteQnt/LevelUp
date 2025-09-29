@@ -1,10 +1,19 @@
 <script setup lang="ts">
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
+import { resolveAlias, resolveNameColor } from '@/lib/premium';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 // Props du jeu et des flash messages
+type DiscussionUser = {
+    username: string;
+    display_name_color?: string | null;
+    display_alias?: string | null;
+    profile_border_style?: string | null;
+    is_subscribed?: boolean;
+};
+
 const props = defineProps<{
     game: {
         id: number;
@@ -16,16 +25,12 @@ const props = defineProps<{
         comments: {
             id: number;
             content: string;
-            user: {
-                username: string;
-            };
+            user: DiscussionUser;
         }[];
         tips: {
             id: number;
             content: string;
-            user: {
-                username: string;
-            };
+            user: DiscussionUser;
         }[];
         ratings: {
             enabled: boolean;
@@ -66,6 +71,13 @@ const tipForm = useForm({
     content: '',
     game_id: props.game.id,
 });
+
+const premiumNameStyleFor = (discussionUser: DiscussionUser) => {
+    const color = resolveNameColor(discussionUser);
+    return color ? { color } : undefined;
+};
+
+const premiumAliasFor = (discussionUser: DiscussionUser) => resolveAlias(discussionUser) ?? undefined;
 
 // Envoi du commentaire
 const submit = () => {
@@ -293,7 +305,15 @@ const setRating = (value: number) => {
                         class="mb-4 rounded border border-purple-100 bg-purple-50 p-4"
                     >
                         <div class="flex items-center justify-between">
-                            <p class="font-semibold text-purple-700">@{{ tip.user.username }}</p>
+                            <p class="font-semibold" :style="premiumNameStyleFor(tip.user)">
+                                @{{ tip.user.username }}
+                                <span
+                                    v-if="premiumAliasFor(tip.user)"
+                                    class="ml-1 text-xs font-medium text-purple-600/80"
+                                >
+                                    ({{ premiumAliasFor(tip.user) }})
+                                </span>
+                            </p>
                             <button
                                 v-if="
                                     auth.user &&
@@ -345,7 +365,15 @@ const setRating = (value: number) => {
                         class="mb-4 border-b pb-2"
                     >
                         <div class="flex items-center justify-between">
-                            <p class="font-semibold text-blue-700">@{{ comment.user.username }}</p>
+                            <p class="font-semibold" :style="premiumNameStyleFor(comment.user)">
+                                @{{ comment.user.username }}
+                                <span
+                                    v-if="premiumAliasFor(comment.user)"
+                                    class="ml-1 text-xs font-medium text-blue-600/80"
+                                >
+                                    ({{ premiumAliasFor(comment.user) }})
+                                </span>
+                            </p>
                             <button
                                 v-if="
                                     auth.user &&

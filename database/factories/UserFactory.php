@@ -37,6 +37,9 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'is_admin' => false,
+            'display_name_color' => null,
+            'display_alias' => null,
+            'profile_border_style' => null,
         ];
     }
 

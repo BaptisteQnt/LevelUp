@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
 import { useActiveLink } from '@/composables/useActiveLink';
+import { isPremiumUser, resolveAlias, resolveBorderClass, resolveNameColor } from '@/lib/premium';
 import type { BreadcrumbItem, NavItem, SharedData, User } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Menu, X } from 'lucide-vue-next';
@@ -27,6 +28,14 @@ const { isActive } = useActiveLink();
 
 const userInitials = computed(() => (user.value ? getInitials(user.value.name) : ''));
 const userHasAvatar = computed(() => Boolean(user.value?.avatar));
+
+const premiumAlias = computed(() => (user.value ? resolveAlias(user.value) : undefined));
+const premiumNameColor = computed(() => (user.value ? resolveNameColor(user.value) : undefined));
+const avatarBorderClass = computed(() =>
+    user.value && isPremiumUser(user.value)
+        ? resolveBorderClass(user.value.profile_border_style)
+        : ''
+);
 
 
 const mainNavItems: NavItem[] = [
@@ -103,7 +112,7 @@ const closeMobileMenu = () => {
                             type="button"
                             class="flex items-center gap-2 rounded-full border border-sidebar-border/80 p-1.5 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
                         >
-                            <Avatar class="size-8">
+                            <Avatar class="size-8" :class="avatarBorderClass">
                                 <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
                                 <AvatarFallback>{{ userInitials }}</AvatarFallback>
                             </Avatar>
@@ -142,12 +151,20 @@ const closeMobileMenu = () => {
                 </Link>
                 <div v-else class="flex flex-col gap-3 rounded-lg border border-sidebar-border/70 p-3">
                     <div class="flex items-center gap-3">
-                        <Avatar class="size-10">
+                        <Avatar class="size-10" :class="avatarBorderClass">
                             <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
                             <AvatarFallback class="text-base">{{ userInitials }}</AvatarFallback>
                         </Avatar>
                         <div class="flex flex-col text-sm">
-                            <span class="font-semibold text-neutral-900 dark:text-neutral-100">{{ user?.name }}</span>
+                            <span
+                                class="font-semibold text-neutral-900 dark:text-neutral-100"
+                                :style="premiumNameColor ? { color: premiumNameColor } : undefined"
+                            >
+                                {{ user?.name }}
+                                <span v-if="premiumAlias" class="ml-1 text-xs font-normal text-muted-foreground">
+                                    ({{ premiumAlias }})
+                                </span>
+                            </span>
                             <span class="text-neutral-500 dark:text-neutral-400">{{ user?.email }}</span>
                         </div>
                     </div>

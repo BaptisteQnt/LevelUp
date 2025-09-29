@@ -21,6 +21,10 @@ class UserProfileController extends Controller
                 'country' => $user->country,
                 'age' => $user->age,
                 'created_at' => $user->created_at->diffForHumans(),
+                'is_premium' => $user->subscribed('default'),
+                'display_name_color' => $user->display_name_color,
+                'display_alias' => $user->display_alias,
+                'profile_border_style' => $user->profile_border_style,
                 // 'avatar' => $user->avatar, // plus tard
             ],
         ]);

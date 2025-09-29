@@ -14,16 +14,14 @@ class User extends Authenticatable
     use HasFactory, Notifiable, Billable;
 
     /**
-     * The attributes that are mass assignable.
+     * The accessors that should be appended to the model's array form.
      *
      * @var list<string>
      */
+    protected $appends = [
+        'is_subscribed',
+    ];
 
-     public function oauthAccounts()
-    {
-        return $this->hasMany(OauthAccount::class);
-    }
-    
     protected $fillable = [
         'name',
         'username',
@@ -36,6 +34,9 @@ class User extends Authenticatable
         'age',
         'password',
         'is_admin',
+        'display_name_color',
+        'display_alias',
+        'profile_border_style',
     ];
 
     /**
@@ -70,6 +71,16 @@ class User extends Authenticatable
     public function ratings()
     {
         return $this->hasMany(GameRating::class);
+    }
+
+    public function oauthAccounts()
+    {
+        return $this->hasMany(OauthAccount::class);
+    }
+
+    public function getIsSubscribedAttribute(): bool
+    {
+        return $this->subscribed('default');
     }
 
 }
