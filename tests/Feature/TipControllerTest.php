@@ -28,6 +28,7 @@ class TipControllerTest extends TestCase
             'user_id' => $user->id,
             'game_id' => $game->id,
             'content' => 'Une astuce très utile',
+            'is_approved' => false,
         ]);
     }
 
@@ -54,6 +55,36 @@ class TipControllerTest extends TestCase
         $response->assertForbidden();
         $this->assertDatabaseHas('tips', [
             'id' => $tip->id,
+        ]);
+    }
+
+    public function test_admin_can_approve_tip(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $tip = Tip::factory()->create(['is_approved' => false]);
+
+        $response = $this->actingAs($admin)->patch(route('admin.tips.approve', $tip));
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('tips', [
+            'id' => $tip->id,
+            'is_approved' => true,
+        ]);
+    }
+
+    public function test_non_admin_cannot_approve_tip(): void
+    {
+        $user = User::factory()->create(['is_admin' => false]);
+        $tip = Tip::factory()->create(['is_approved' => false]);
+
+        $response = $this->actingAs($user)->patch(route('admin.tips.approve', $tip));
+
+        $response->assertForbidden();
+
+        $this->assertDatabaseHas('tips', [
+            'id' => $tip->id,
+            'is_approved' => false,
         ]);
     }
 }

@@ -16,12 +16,13 @@ class TipController extends Controller
         ]);
 
         Tip::create([
-            'user_id' => Auth::id(),
-            'game_id' => $validated['game_id'],
-            'content' => $validated['content'],
+            'user_id'     => Auth::id(),
+            'game_id'     => $validated['game_id'],
+            'content'     => $validated['content'],
+            'is_approved' => false,
         ]);
 
-        return back()->with('success', 'Astuce ajoutée.');
+        return back()->with('success', 'Merci pour ton astuce ! Elle sera visible après validation.');
     }
 
     public function destroy(Request $request, Tip $tip)
@@ -35,5 +36,18 @@ class TipController extends Controller
         $tip->delete();
 
         return back()->with('success', 'Astuce supprimée.');
+    }
+
+    public function approve(Request $request, Tip $tip)
+    {
+        if (! $request->user()?->is_admin) {
+            abort(403);
+        }
+
+        if (! $tip->is_approved) {
+            $tip->forceFill(['is_approved' => true])->save();
+        }
+
+        return back()->with('success', 'Astuce validée avec succès.');
     }
 }

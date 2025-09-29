@@ -5,54 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class CommentController extends Controller
 {
-    public function index(Request $request): Response
-    {
-        $comments = Comment::query()
-            ->with(['user:id,username', 'game:id,title,slug'])
-            ->latest()
-            ->paginate(15)
-            ->through(fn (Comment $comment) => [
-                'id' => $comment->id,
-                'content' => $comment->content,
-                'created_at' => $comment->created_at->toIso8601String(),
-                'user' => [
-                    'id' => $comment->user->id,
-                    'username' => $comment->user->username,
-                ],
-                'game' => [
-                    'id' => $comment->game->id,
-                    'title' => $comment->game->title,
-                    'slug' => $comment->game->slug,
-                ],
-            ]);
-
-        return Inertia::render('admin/Comments', [
-            'comments' => [
-                'data' => $comments->items(),
-                'links' => $comments->linkCollection()->map(fn ($link) => [
-                    'url' => $link['url'],
-                    'label' => $link['label'],
-                    'active' => $link['active'],
-                ])->values(),
-                'meta' => [
-                    'current_page' => $comments->currentPage(),
-                    'last_page' => $comments->lastPage(),
-                    'per_page' => $comments->perPage(),
-                    'total' => $comments->total(),
-                ],
-            ],
-            'flash' => [
-                'success' => $request->session()->get('success'),
-                'error' => $request->session()->get('error'),
-            ],
-        ]);
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -61,12 +16,13 @@ class CommentController extends Controller
         ]);
 
         Comment::create([
-            'user_id' => Auth::id(),
-            'game_id' => $validated['game_id'],
-            'content' => $validated['content'],
+            'user_id'     => Auth::id(),
+            'game_id'     => $validated['game_id'],
+            'content'     => $validated['content'],
+            'is_approved' => false,
         ]);
 
-        return back()->with('success', 'Commentaire ajouté.');
+        return back()->with('success', 'Merci pour ton partage ! Ton commentaire sera visible après validation.');
     }
 
     public function destroy(Request $request, Comment $comment)
@@ -80,6 +36,19 @@ class CommentController extends Controller
         $comment->delete();
 
         return back()->with('success', 'Commentaire supprimé.');
+    }
+
+    public function approve(Request $request, Comment $comment)
+    {
+        if (! $request->user()?->is_admin) {
+            abort(403);
+        }
+
+        if (! $comment->is_approved) {
+            $comment->forceFill(['is_approved' => true])->save();
+        }
+
+        return back()->with('success', 'Commentaire validé avec succès.');
     }
 
 }
