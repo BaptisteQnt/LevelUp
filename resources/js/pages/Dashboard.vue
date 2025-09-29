@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
+import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { MessageSquare, ShieldCheck } from 'lucide-vue-next';
+import { computed, type Component } from 'vue';
+
+interface AdminAction {
+    title: string;
+    description: string;
+    href: string;
+    icon: Component;
+}
+
+const page = usePage<SharedData>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,13 +21,64 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/',
     },
 ];
+
+const isAdmin = computed(() => page.props.auth.user?.is_admin ?? false);
+
+const adminLinks = computed<AdminAction[]>(() => [
+    {
+        title: 'Modération',
+        description: 'Gère les commentaires et les astuces en attente de validation.',
+        href: route('admin.moderation.index'),
+        icon: MessageSquare,
+    },
+    {
+        title: 'Pouvoirs',
+        description: 'Donne ou retire les droits administrateur aux membres de l’équipe.',
+        href: route('admin.powers.index'),
+        icon: ShieldCheck,
+    },
+]);
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AppHeaderLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+        <div class="space-y-6 rounded-xl p-4 md:p-6">
+            <section
+                v-if="isAdmin"
+                class="space-y-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+            >
+                <header>
+                    <h2 class="text-lg font-semibold">Menu administrateur</h2>
+                    <p class="text-sm text-gray-600 dark:text-neutral-400">
+                        Accède rapidement aux outils nécessaires pour modérer la communauté et gérer les accès.
+                    </p>
+                </header>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <Link
+                        v-for="link in adminLinks"
+                        :key="link.title"
+                        :href="link.href"
+                        class="group flex items-start justify-between gap-4 rounded-lg border border-gray-200 bg-white p-5 transition hover:border-primary hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <div class="flex items-start gap-4">
+                            <span
+                                class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-white dark:bg-primary/20"
+                            >
+                                <component :is="link.icon" class="size-5" />
+                            </span>
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-semibold">{{ link.title }}</h3>
+                                <p class="text-xs text-gray-600 dark:text-neutral-400">{{ link.description }}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold text-primary transition group-hover:underline">Accéder</span>
+                    </Link>
+                </div>
+            </section>
+
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
                     <PlaceholderPattern />
