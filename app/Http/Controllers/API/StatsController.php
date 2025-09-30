@@ -9,6 +9,7 @@ use App\Models\GameRating;
 use App\Models\Tip;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class StatsController extends Controller
 {
@@ -43,8 +44,19 @@ class StatsController extends Controller
         ]);
     }
 
-    public function gameRating(Game $game): JsonResponse
+    public function gameRating(Request $request): JsonResponse
     {
+        $data = $request->validate([
+            'name' => ['required', 'string'],
+        ]);
+
+        $game = Game::query()
+            ->where(function ($query) use ($data) {
+                $query->where('title', $data['name'])
+                    ->orWhere('slug', $data['name']);
+            })
+            ->firstOrFail();
+
         $ratingsCount = $game->ratings()->count();
 
         $averageRating = null;

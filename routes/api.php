@@ -11,7 +11,7 @@ Route::name('api.')->group(function () {
         Route::delete('auth/token', [AuthTokenController::class, 'destroy'])->name('auth.token.destroy');
 
         Route::get('stats', [StatsController::class, 'index'])->name('stats');
-        Route::get('games/{game}/rating', [StatsController::class, 'gameRating'])->name('games.rating');
+        Route::get('games/rating', [StatsController::class, 'gameRating'])->name('games.rating');
 
     });
 });
