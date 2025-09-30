@@ -1,3 +1,5 @@
+import { getCsrfToken } from '@/lib/utils';
+
 export interface DashboardStats {
     games: {
         total: number;
@@ -19,9 +21,13 @@ export interface DashboardStats {
 }
 
 export const fetchDashboardStats = async (): Promise<DashboardStats> => {
+    const csrfToken = getCsrfToken();
+
     const response = await fetch(route('api.stats'), {
         headers: {
             Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...(csrfToken && { 'X-CSRF-TOKEN': csrfToken }),
         },
         credentials: 'same-origin',
     });
