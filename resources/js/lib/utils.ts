@@ -14,3 +14,4 @@ export function getXsrfToken(): string | null {
 
     return match ? decodeURIComponent(match[1]) : null;
 }
+
