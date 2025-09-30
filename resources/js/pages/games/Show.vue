@@ -14,6 +14,8 @@ type DiscussionUser = {
     is_subscribed?: boolean;
 };
 
+type ReactionType = 'like' | 'dislike';
+
 const props = defineProps<{
     game: {
         id: number;
@@ -25,11 +27,17 @@ const props = defineProps<{
         comments: {
             id: number;
             content: string;
+            likes_count: number;
+            dislikes_count: number;
+            user_reaction: ReactionType | null;
             user: DiscussionUser;
         }[];
         tips: {
             id: number;
             content: string;
+            likes_count: number;
+            dislikes_count: number;
+            user_reaction: ReactionType | null;
             user: DiscussionUser;
         }[];
         ratings: {
@@ -72,6 +80,9 @@ const tipForm = useForm({
     game_id: props.game.id,
 });
 
+const reactingCommentId = ref<number | null>(null);
+const reactingTipId = ref<number | null>(null);
+
 const premiumNameStyleFor = (discussionUser: DiscussionUser) => {
     const color = resolveNameColor(discussionUser);
     return color ? { color } : undefined;
@@ -109,6 +120,44 @@ const deleteTip = (id: number) => {
             preserveScroll: true,
         });
     }
+};
+
+const reactToComment = (commentId: number, reaction: ReactionType) => {
+    if (!auth.user) {
+        return;
+    }
+
+    reactingCommentId.value = commentId;
+
+    router.post(
+        route('comments.react', commentId),
+        { reaction },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                reactingCommentId.value = null;
+            },
+        }
+    );
+};
+
+const reactToTip = (tipId: number, reaction: ReactionType) => {
+    if (!auth.user) {
+        return;
+    }
+
+    reactingTipId.value = tipId;
+
+    router.post(
+        route('tips.react', tipId),
+        { reaction },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                reactingTipId.value = null;
+            },
+        }
+    );
 };
 
 const displayText = computed(() => {
@@ -326,6 +375,44 @@ const setRating = (value: number) => {
                             </button>
                         </div>
                         <p class="mt-1 text-gray-800">{{ tip.content }}</p>
+                        <div class="mt-3 flex items-center gap-3 text-sm">
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                :class="[
+                                    tip.user_reaction === 'like'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-purple-50 text-purple-600 hover:bg-purple-100',
+                                    (!auth.user || reactingTipId === tip.id)
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : '',
+                                ]"
+                                :disabled="!auth.user || reactingTipId === tip.id"
+                                @click="reactToTip(tip.id, 'like')"
+                            >
+                                <span aria-hidden="true">👍</span>
+                                <span>{{ tip.likes_count }}</span>
+                                <span class="sr-only">Je trouve cette astuce utile</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                :class="[
+                                    tip.user_reaction === 'dislike'
+                                        ? 'bg-red-100 text-red-700'
+                                        : 'bg-purple-50 text-purple-600 hover:bg-red-50',
+                                    (!auth.user || reactingTipId === tip.id)
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : '',
+                                ]"
+                                :disabled="!auth.user || reactingTipId === tip.id"
+                                @click="reactToTip(tip.id, 'dislike')"
+                            >
+                                <span aria-hidden="true">👎</span>
+                                <span>{{ tip.dislikes_count }}</span>
+                                <span class="sr-only">Je trouve cette astuce inutile</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p v-else class="text-gray-500">Aucune astuce pour le moment.</p>
@@ -386,6 +473,44 @@ const setRating = (value: number) => {
                             </button>
                         </div>
                         <p class="text-gray-800">{{ comment.content }}</p>
+                        <div class="mt-3 flex items-center gap-3 text-sm">
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                :class="[
+                                    comment.user_reaction === 'like'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-blue-50',
+                                    (!auth.user || reactingCommentId === comment.id)
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : '',
+                                ]"
+                                :disabled="!auth.user || reactingCommentId === comment.id"
+                                @click="reactToComment(comment.id, 'like')"
+                            >
+                                <span aria-hidden="true">👍</span>
+                                <span>{{ comment.likes_count }}</span>
+                                <span class="sr-only">J'aime ce commentaire</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 rounded-full border border-transparent px-3 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                :class="[
+                                    comment.user_reaction === 'dislike'
+                                        ? 'bg-red-100 text-red-700'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-red-50',
+                                    (!auth.user || reactingCommentId === comment.id)
+                                        ? 'cursor-not-allowed opacity-60'
+                                        : '',
+                                ]"
+                                :disabled="!auth.user || reactingCommentId === comment.id"
+                                @click="reactToComment(comment.id, 'dislike')"
+                            >
+                                <span aria-hidden="true">👎</span>
+                                <span>{{ comment.dislikes_count }}</span>
+                                <span class="sr-only">Je n'aime pas ce commentaire</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <p v-else class="text-gray-500">Aucun commentaire pour ce jeu.</p>

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\TranslateGameTexts;
+use App\Models\Comment;
+use App\Models\CommentReaction;
 use App\Models\Game;
+use App\Models\Tip;
+use App\Models\TipReaction;
 use App\Services\IGDBService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -122,14 +126,105 @@ class GameController extends Controller
         ])->filter()->implode("\n\n");
 
         $userRating = null;
+        $requestUser = request()->user();
 
-
-        if ($hasRatingsTable && ($requestUser = request()->user())) {
-
+        if ($hasRatingsTable && $requestUser) {
             $userRating = $game->ratings()
                 ->where('user_id', $requestUser->id)
                 ->value('rating');
         }
+
+        $commentsQuery = $game->comments()
+            ->approved()
+            ->with('user:id,username,display_name_color,display_alias,profile_border_style')
+            ->withCount([
+                'reactions as likes_count' => fn ($query) => $query->where('reaction', CommentReaction::LIKE),
+                'reactions as dislikes_count' => fn ($query) => $query->where('reaction', CommentReaction::DISLIKE),
+            ])
+            ->latest();
+
+        if ($requestUser) {
+            $commentsQuery->with([
+                'reactions' => fn ($query) => $query
+                    ->where('user_id', $requestUser->id)
+                    ->select('id', 'comment_id', 'user_id', 'reaction'),
+            ]);
+        }
+
+        $comments = $commentsQuery->get()->map(function (Comment $comment) use ($requestUser) {
+            $commentUser = $comment->user;
+
+            $userReaction = null;
+
+            if ($requestUser && $comment->relationLoaded('reactions')) {
+                $userReaction = optional($comment->reactions->first())->reaction;
+            }
+
+            return [
+                'id' => $comment->id,
+                'content' => $comment->content,
+                'likes_count' => (int) ($comment->likes_count ?? 0),
+                'dislikes_count' => (int) ($comment->dislikes_count ?? 0),
+                'user_reaction' => match ($userReaction) {
+                    CommentReaction::LIKE => 'like',
+                    CommentReaction::DISLIKE => 'dislike',
+                    default => null,
+                },
+                'user' => [
+                    'username' => $commentUser->username,
+                    'display_name_color' => $commentUser->display_name_color,
+                    'display_alias' => $commentUser->display_alias,
+                    'profile_border_style' => $commentUser->profile_border_style,
+                    'is_subscribed' => $commentUser->is_subscribed,
+                ],
+            ];
+        })->values();
+
+        $tipsQuery = $game->tips()
+            ->approved()
+            ->with('user:id,username,display_name_color,display_alias,profile_border_style')
+            ->withCount([
+                'reactions as likes_count' => fn ($query) => $query->where('reaction', TipReaction::LIKE),
+                'reactions as dislikes_count' => fn ($query) => $query->where('reaction', TipReaction::DISLIKE),
+            ])
+            ->latest();
+
+        if ($requestUser) {
+            $tipsQuery->with([
+                'reactions' => fn ($query) => $query
+                    ->where('user_id', $requestUser->id)
+                    ->select('id', 'tip_id', 'user_id', 'reaction'),
+            ]);
+        }
+
+        $tips = $tipsQuery->get()->map(function (Tip $tip) use ($requestUser) {
+            $tipUser = $tip->user;
+
+            $userReaction = null;
+
+            if ($requestUser && $tip->relationLoaded('reactions')) {
+                $userReaction = optional($tip->reactions->first())->reaction;
+            }
+
+            return [
+                'id' => $tip->id,
+                'content' => $tip->content,
+                'likes_count' => (int) ($tip->likes_count ?? 0),
+                'dislikes_count' => (int) ($tip->dislikes_count ?? 0),
+                'user_reaction' => match ($userReaction) {
+                    TipReaction::LIKE => 'like',
+                    TipReaction::DISLIKE => 'dislike',
+                    default => null,
+                },
+                'user' => [
+                    'username' => $tipUser->username,
+                    'display_name_color' => $tipUser->display_name_color,
+                    'display_alias' => $tipUser->display_alias,
+                    'profile_border_style' => $tipUser->profile_border_style,
+                    'is_subscribed' => $tipUser->is_subscribed,
+                ],
+            ];
+        })->values();
 
         return Inertia::render('games/Show', [
             'game' => [
@@ -139,16 +234,8 @@ class GameController extends Controller
                 'summary'     => $texts['summary'],
                 'storyline'   => $texts['storyline'],
                 'description' => $body !== '' ? $body : null,
-                'comments'    => $game->comments()
-                                    ->approved()
-                                    ->with('user:id,username,display_name_color,display_alias,profile_border_style')
-                                    ->latest()
-                                    ->get(),
-                'tips'        => $game->tips()
-                                    ->approved()
-                                    ->with('user:id,username,display_name_color,display_alias,profile_border_style')
-                                    ->latest()
-                                    ->get(),
+                'comments'    => $comments->all(),
+                'tips'        => $tips->all(),
                 'ratings'     => [
 
                     'enabled' => $hasRatingsTable,
