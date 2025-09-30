@@ -15,4 +15,8 @@ Session 2 le 16/05/2025 :
 -modification de la partie modification du profils.  Avec tout les champs en plus. 
 -Ajout de la page utilisateur avec les informations de celui ci.  
 
-Continuer la creations des autre élements middlaware, role, et applications en générale. 
+Continuer la creations des autre élements middlaware, role, et applications en générale.
+
+## Notes API
+
+- Voir `docs/api-jwt-auth.md` pour la mise en place d'un système d'authentification API avec token JWT (`php-open-source-saver/jwt-auth`).
