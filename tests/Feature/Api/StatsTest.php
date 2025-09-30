@@ -24,7 +24,7 @@ class StatsTest extends TestCase
     {
         $game = Game::factory()->create();
 
-        $this->getJson("/api/games/{$game->id}/rating")->assertUnauthorized();
+        $this->getJson(route('api.games.rating', ['name' => $game->title]))->assertUnauthorized();
     }
 
     public function test_stats_endpoint_returns_aggregated_metrics(): void
@@ -84,13 +84,49 @@ class StatsTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $response = $this->getJson("/api/games/{$game->id}/rating");
+        $response = $this->getJson(route('api.games.rating', ['name' => $game->title]));
 
         $response
             ->assertOk()
             ->assertJson([
                 'game_id' => $game->id,
                 'average_rating' => 7.5,
+                'ratings_count' => 2,
+            ]);
+    }
+
+    public function test_game_rating_endpoint_requires_game_name(): void
+    {
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $this->getJson(route('api.games.rating'))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('name');
+    }
+
+    public function test_game_rating_endpoint_can_find_game_by_slug(): void
+    {
+        $user = User::factory()->create();
+        $anotherUser = User::factory()->create();
+        $game = Game::factory()->create([
+            'title' => 'Level Up Quest',
+            'slug' => 'level-up-quest',
+        ]);
+
+        GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 9]);
+        GameRating::factory()->for($game, 'game')->for($anotherUser, 'user')->create(['rating' => 5]);
+
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson(route('api.games.rating', ['name' => $game->slug]));
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'game_id' => $game->id,
+                'average_rating' => 7.0,
                 'ratings_count' => 2,
             ]);
     }
