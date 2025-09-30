@@ -4,7 +4,7 @@ import { fetchDashboardStats, type DashboardStats } from '@/lib/stats';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { MessageSquare, Megaphone, ShieldCheck } from 'lucide-vue-next';
-import { computed, onMounted, ref, type Component } from 'vue';
+import { computed, onMounted, ref, watch, type Component } from 'vue';
 
 interface AdminAction {
     title: string;
@@ -21,7 +21,7 @@ interface RecentDashboardGame {
     searched_at: string | null;
 }
 
-const page = usePage<SharedData & { recentGames?: RecentDashboardGame[] }>();
+const page = usePage<SharedData & { recentGames?: RecentDashboardGame[]; stats?: DashboardStats }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -58,8 +58,9 @@ const adminLinks = computed<AdminAction[]>(() => [
 
 const currentAnnouncement = computed(() => page.props.announcement ?? null);
 
-const stats = ref<DashboardStats | null>(null);
-const isStatsLoading = ref(false);
+const sharedStats = computed(() => page.props.stats ?? null);
+const stats = ref<DashboardStats | null>(sharedStats.value);
+const isStatsLoading = ref(!stats.value);
 const statsError = ref<string | null>(null);
 
 const loadStats = async () => {
@@ -79,7 +80,15 @@ const loadStats = async () => {
 };
 
 onMounted(() => {
-    void loadStats();
+    if (!stats.value) {
+        void loadStats();
+    }
+});
+
+watch(sharedStats, (value) => {
+    if (value) {
+        stats.value = value;
+    }
 });
 
 const formatDate = (value: string | null | undefined) =>
