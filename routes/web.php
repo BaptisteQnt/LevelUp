@@ -9,8 +9,10 @@ use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PowersController;
 use App\Http\Controllers\GameRatingController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentReactionController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TipController;
+use App\Http\Controllers\TipReactionController;
 use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use App\Models\Announcement;
@@ -71,8 +73,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/games/{game}/rating', [GameRatingController::class, 'store'])->name('games.rating.store');
 });
 Route::middleware('auth')->delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+Route::middleware('auth')->post('/comments/{comment}/react', [CommentReactionController::class, 'store'])->name('comments.react');
 Route::middleware('auth')->post('/tips', [TipController::class, 'store'])->name('tips.store');
 Route::middleware('auth')->delete('/tips/{tip}', [TipController::class, 'destroy'])->name('tips.destroy');
+Route::middleware('auth')->post('/tips/{tip}/react', [TipReactionController::class, 'store'])->name('tips.react');
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/moderation', ModerationController::class)->name('admin.moderation.index');

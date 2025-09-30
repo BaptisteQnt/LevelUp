@@ -35,4 +35,9 @@ class Tip extends Model
     {
         return $this->belongsTo(Game::class);
     }
+
+    public function reactions()
+    {
+        return $this->hasMany(TipReaction::class);
+    }
 }
