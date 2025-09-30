@@ -48,6 +48,8 @@ jobs:
 
       - name: Build Assets
         run: npm run build
+      - name: Front-end Tests
+        run: npm run test
 
       - name: Tests
         run: ./vendor/bin/pest
