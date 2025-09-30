@@ -8,6 +8,7 @@ use App\Models\GameRating;
 use App\Models\Tip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class StatsTest extends TestCase
@@ -45,7 +46,9 @@ class StatsTest extends TestCase
         Tip::factory()->for($gameA, 'game')->for($user, 'user')->create();
         Tip::factory()->for($gameB, 'game')->for($anotherUser, 'user')->create(['is_approved' => false]);
 
-        $response = $this->actingAs($user)->getJson('/api/stats');
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/stats');
 
         $response
             ->assertOk()
@@ -79,7 +82,9 @@ class StatsTest extends TestCase
         GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 8]);
         GameRating::factory()->for($game, 'game')->for($anotherUser, 'user')->create(['rating' => 7]);
 
-        $response = $this->actingAs($user)->getJson("/api/games/{$game->id}/rating");
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson("/api/games/{$game->id}/rating");
 
         $response
             ->assertOk()
