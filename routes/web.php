@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Dashboard\GetDashboardStats;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -48,6 +49,8 @@ $dashboardPage = function (Request $request) {
         ->values()
         ->all();
 
+    $stats = app(GetDashboardStats::class)->handle();
+
     return Inertia::render('Dashboard', [
         'isSubscribed'  => $subscription?->active() ?? false,
         'onGracePeriod' => $subscription?->onGracePeriod() ?? false,
@@ -60,6 +63,7 @@ $dashboardPage = function (Request $request) {
             'author'       => $announcement->user?->only(['id', 'name', 'username']),
         ] : null,
         'recentGames'   => $recentGames,
+        'stats'         => $stats,
     ]);
 };
 
