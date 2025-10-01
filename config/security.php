@@ -56,6 +56,7 @@ return [
             'https://fonts.bunny.net',
         ], $devScriptSources);
 
+
         return [
             'default-src' => [
                 "'self'",
@@ -63,6 +64,7 @@ return [
             'script-src' => $scriptSources,
             'script-src-elem' => $scriptSources,
             'style-src' => $styleSources,
+
             'font-src' => [
                 "'self'",
                 'https://fonts.bunny.net',
@@ -76,6 +78,7 @@ return [
             'connect-src' => array_merge([
                 "'self'",
             ], $devConnectSources),
+
         ];
     })(),
 ];
