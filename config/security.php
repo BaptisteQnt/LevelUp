@@ -18,18 +18,26 @@ return [
         ],
         'script-src' => [
             "'self'",
+            "'unsafe-inline'",
             'https://js.stripe.com',
             'https://*.stripe.com',
             'https://*.deepl.com',
             'https://*.deeplapi.com',
             'http://localhost:5173',
             'https://localhost:5173',
+            'http://[::1]:5173',
+            'https://[::1]:5173',
         ],
         'style-src' => [
             "'self'",
             "'unsafe-inline'",
             'http://localhost:5173',
             'https://localhost:5173',
+            'https://fonts.bunny.net',
+        ],
+        'font-src' => [
+            "'self'",
+            'https://fonts.bunny.net',
         ],
         'frame-src' => [
             "'self'",
