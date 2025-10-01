@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'environments' => [
+        'production',
+        'testing',
+    ],
+
     'hsts' => [
         'enabled' => true,
         'max_age' => 63_072_000,

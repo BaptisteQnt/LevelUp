@@ -13,6 +13,10 @@ class SecurityHeaders
         /** @var Response $response */
         $response = $next($request);
 
+        if (! $this->shouldApplySecurityHeaders()) {
+            return $response;
+        }
+
         $this->addStrictTransportSecurityHeader($request, $response);
         $this->addFrameOptionsHeader($response);
         $this->addContentTypeOptionsHeader($response);
@@ -20,6 +24,17 @@ class SecurityHeaders
         $this->addContentSecurityPolicyHeader($response);
 
         return $response;
+    }
+
+    protected function shouldApplySecurityHeaders(): bool
+    {
+        $environments = config('security.environments', []);
+
+        if (empty($environments)) {
+            return true;
+        }
+
+        return app()->environment($environments);
     }
 
     protected function addStrictTransportSecurityHeader(Request $request, Response $response): void
