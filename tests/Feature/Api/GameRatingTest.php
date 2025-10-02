@@ -18,10 +18,11 @@ class GameRatingTest extends TestCase
     {
         $game = Game::factory()->create();
 
-        $this->getJson(route('api.games.ratings.show', $game))->assertUnauthorized();
-        $this->postJson(route('api.games.ratings.store', $game), ['rating' => 5])->assertUnauthorized();
-        $this->putJson(route('api.games.ratings.update', $game), ['rating' => 6])->assertUnauthorized();
-        $this->deleteJson(route('api.games.ratings.destroy', $game))->assertUnauthorized();
+        $this->getJson(route('api.games.ratings.show', ['game' => $game->slug]))->assertUnauthorized();
+        $this->postJson(route('api.games.ratings.store', ['game' => $game->slug]), ['rating' => 5])->assertUnauthorized();
+        $this->putJson(route('api.games.ratings.update', ['game' => $game->slug]), ['rating' => 6])->assertUnauthorized();
+        $this->deleteJson(route('api.games.ratings.destroy', ['game' => $game->slug]))->assertUnauthorized();
+
     }
 
     public function test_user_can_create_game_rating(): void
@@ -29,7 +30,8 @@ class GameRatingTest extends TestCase
         Sanctum::actingAs($user = User::factory()->create());
         $game = Game::factory()->create();
 
-        $response = $this->postJson(route('api.games.ratings.store', $game), ['rating' => 7]);
+        $response = $this->postJson(route('api.games.ratings.store', ['game' => $game->slug]), ['rating' => 7]);
+
 
         $response
             ->assertCreated()
@@ -53,7 +55,8 @@ class GameRatingTest extends TestCase
 
         GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 5]);
 
-        $response = $this->postJson(route('api.games.ratings.store', $game), ['rating' => 8]);
+        $response = $this->postJson(route('api.games.ratings.store', ['game' => $game->slug]), ['rating' => 8]);
+
 
         $response
             ->assertStatus(Response::HTTP_CONFLICT)
@@ -69,7 +72,8 @@ class GameRatingTest extends TestCase
 
         GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 9]);
 
-        $response = $this->getJson(route('api.games.ratings.show', $game));
+        $response = $this->getJson(route('api.games.ratings.show', ['game' => $game->slug]));
+
 
         $response
             ->assertOk()
@@ -85,7 +89,8 @@ class GameRatingTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $game = Game::factory()->create();
 
-        $this->getJson(route('api.games.ratings.show', $game))
+        $this->getJson(route('api.games.ratings.show', ['game' => $game->slug]))
+
             ->assertNotFound()
             ->assertJson([
                 'message' => 'Aucune note trouvée pour ce jeu.',
@@ -99,7 +104,8 @@ class GameRatingTest extends TestCase
 
         GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 4]);
 
-        $response = $this->putJson(route('api.games.ratings.update', $game), ['rating' => 10]);
+        $response = $this->putJson(route('api.games.ratings.update', ['game' => $game->slug]), ['rating' => 10]);
+
 
         $response
             ->assertOk()
@@ -119,7 +125,8 @@ class GameRatingTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $game = Game::factory()->create();
 
-        $this->putJson(route('api.games.ratings.update', $game), ['rating' => 6])
+        $this->putJson(route('api.games.ratings.update', ['game' => $game->slug]), ['rating' => 6])
+
             ->assertNotFound()
             ->assertJson([
                 'message' => 'Aucune note trouvée pour ce jeu.',
@@ -133,7 +140,8 @@ class GameRatingTest extends TestCase
 
         GameRating::factory()->for($game, 'game')->for($user, 'user')->create(['rating' => 3]);
 
-        $this->deleteJson(route('api.games.ratings.destroy', $game))
+        $this->deleteJson(route('api.games.ratings.destroy', ['game' => $game->slug]))
+
             ->assertNoContent();
 
         $this->assertDatabaseMissing('game_ratings', [
@@ -147,7 +155,8 @@ class GameRatingTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
         $game = Game::factory()->create();
 
-        $this->deleteJson(route('api.games.ratings.destroy', $game))
+        $this->deleteJson(route('api.games.ratings.destroy', ['game' => $game->slug]))
+
             ->assertNotFound()
             ->assertJson([
                 'message' => 'Aucune note trouvée pour ce jeu.',
