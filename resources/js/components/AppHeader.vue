@@ -49,8 +49,8 @@ const mainNavItems: NavItem[] = [
         href: '/games',
     },
     {
-        title: 'Information',
-        href: '/information',
+        title: 'Premium',
+        href: '/premium',
     },
     {
         title: 'Présentation',
