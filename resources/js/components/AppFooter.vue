@@ -17,8 +17,8 @@ const footerLinks: FooterLink[] = [
         href: '/games',
     },
     {
-        title: 'Information',
-        href: '/information',
+        title: 'Premium',
+        href: '/premium',
     },
     {
         title: 'Présentation',
