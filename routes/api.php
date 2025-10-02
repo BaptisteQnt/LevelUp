@@ -15,6 +15,7 @@ Route::name('api.')->group(function () {
         Route::get('games/rating', [StatsController::class, 'gameRating'])->name('games.rating');
 
         Route::prefix('games/{game:slug}')->group(function () {
+
             Route::get('rating', [ApiGameRatingController::class, 'show'])->name('games.ratings.show');
             Route::post('rating', [ApiGameRatingController::class, 'store'])->name('games.ratings.store');
             Route::put('rating', [ApiGameRatingController::class, 'update'])->name('games.ratings.update');
