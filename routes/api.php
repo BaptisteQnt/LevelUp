@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AuthTokenController;
+use App\Http\Controllers\API\GameRatingController as ApiGameRatingController;
 use App\Http\Controllers\API\StatsController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,13 @@ Route::name('api.')->group(function () {
 
         Route::get('stats', [StatsController::class, 'index'])->name('stats');
         Route::get('games/rating', [StatsController::class, 'gameRating'])->name('games.rating');
+
+        Route::prefix('games/{game}')->group(function () {
+            Route::get('rating', [ApiGameRatingController::class, 'show'])->name('games.ratings.show');
+            Route::post('rating', [ApiGameRatingController::class, 'store'])->name('games.ratings.store');
+            Route::put('rating', [ApiGameRatingController::class, 'update'])->name('games.ratings.update');
+            Route::delete('rating', [ApiGameRatingController::class, 'destroy'])->name('games.ratings.destroy');
+        });
 
     });
 });
