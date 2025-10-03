@@ -58,56 +58,56 @@ const submit = () => {
 
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid gap-2">
-                        <Label for="name">Name</Label>
+                        <Label for="name">Nom</Label>
                         <Input id="name" class="mt-1 block w-full" v-model="form.name" required autocomplete="name" placeholder="Full name" />
                         <InputError class="mt-2" :message="form.errors.name" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="username">Username</Label>
+                        <Label for="username">Nom d'utilisateur</Label>
                         <Input id="username" class="mt-1 block w-full" v-model="form.username" required placeholder="Username" />
                         <InputError class="mt-2" :message="form.errors.username" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="phone">Phone</Label>
+                        <Label for="phone">Téléphone</Label>
                         <Input id="phone" class="mt-1 block w-full" v-model="form.phone" placeholder="Phone number" />
                         <InputError class="mt-2" :message="form.errors.phone" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="address">Address</Label>
+                        <Label for="address">Adresse</Label>
                         <Input id="address" class="mt-1 block w-full" v-model="form.address" placeholder="Address" />
                         <InputError class="mt-2" :message="form.errors.address" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="city">City</Label>
+                        <Label for="city">Ville</Label>
                         <Input id="city" class="mt-1 block w-full" v-model="form.city" placeholder="City" />
                         <InputError class="mt-2" :message="form.errors.city" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="cp">Postal Code</Label>
+                        <Label for="cp">Code postal</Label>
                         <Input id="cp" class="mt-1 block w-full" v-model="form.cp" placeholder="Postal Code" />
                         <InputError class="mt-2" :message="form.errors.cp" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="country">Country</Label>
+                        <Label for="country">Pays</Label>
                         <Input id="country" class="mt-1 block w-full" v-model="form.country" placeholder="Country" />
                         <InputError class="mt-2" :message="form.errors.country" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="age">Age</Label>
+                        <Label for="age">Âge</Label>
                         <Input id="age" class="mt-1 block w-full" v-model="form.age" type="number" placeholder="Age" />
                         <InputError class="mt-2" :message="form.errors.age" />
                     </div>
 
 
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">Adresse e-mail</Label>
                         <Input
                             id="email"
                             type="email"
