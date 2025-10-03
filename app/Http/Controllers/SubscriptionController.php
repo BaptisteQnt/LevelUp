@@ -1,9 +1,9 @@
 <?php
 
-// app/Http/Controllers/SubscriptionController.php
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class SubscriptionController extends Controller
 {
@@ -24,13 +24,21 @@ class SubscriptionController extends Controller
         $price = $request->query('price') ?? env('STRIPE_PRICE_DEFAULT');
         abort_unless($price, 400, 'Missing price');
 
-        return $request->user()
+        $checkout = $request->user()
             ->newSubscription('default', $price)
             ->allowPromotionCodes()
             ->checkout([
                 'success_url' => route('billing.success').'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url'  => route('billing.cancel'),
             ]);
+
+        $redirectResponse = $checkout->redirect();
+
+        if ($request->inertia()) {
+            return Inertia::location($redirectResponse->getTargetUrl());
+        }
+
+        return $redirectResponse;
     }
 
     // Page succès
