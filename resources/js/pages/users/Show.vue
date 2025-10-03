@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -39,39 +40,41 @@ const initials = computed(() => props.user.name.slice(0, 2).toUpperCase());
 <template>
     <Head :title="`@${user.username}`" />
 
-    <section class="mx-auto max-w-2xl px-4 py-10">
-        <div class="flex flex-col gap-6 rounded-lg border border-sidebar-border/70 bg-white/90 p-6 shadow-sm dark:bg-neutral-950/80">
-            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <div
-                    class="flex size-20 items-center justify-center rounded-full bg-neutral-100 text-2xl font-semibold uppercase text-neutral-500 shadow-sm dark:bg-neutral-800"
-                    :class="avatarBorderClass"
-                >
-                    {{ initials }}
+    <AppHeaderLayout>
+        <section class="mx-auto max-w-2xl px-4 py-10">
+            <div class="flex flex-col gap-6 rounded-lg border border-sidebar-border/70 bg-white/90 p-6 shadow-sm dark:bg-neutral-950/80">
+                <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                    <div
+                        class="flex size-20 items-center justify-center rounded-full bg-neutral-100 text-2xl font-semibold uppercase text-neutral-500 shadow-sm dark:bg-neutral-800"
+                        :class="avatarBorderClass"
+                    >
+                        {{ initials }}
+                    </div>
+                    <div class="space-y-1">
+                        <h1 class="text-3xl font-bold" :style="displayNameStyle">
+                            {{ user.name }}
+                            <span v-if="displayAlias" class="ml-2 text-base font-medium text-muted-foreground">
+                                ({{ displayAlias }})
+                            </span>
+                        </h1>
+                        <p class="text-neutral-600 dark:text-neutral-300">@{{ user.username }}</p>
+                        <p class="text-sm text-neutral-500 dark:text-neutral-400">
+                            Membre depuis {{ user.created_at }}
+                        </p>
+                    </div>
                 </div>
-                <div class="space-y-1">
-                    <h1 class="text-3xl font-bold" :style="displayNameStyle">
-                        {{ user.name }}
-                        <span v-if="displayAlias" class="ml-2 text-base font-medium text-muted-foreground">
-                            ({{ displayAlias }})
-                        </span>
-                    </h1>
-                    <p class="text-neutral-600 dark:text-neutral-300">@{{ user.username }}</p>
-                    <p class="text-sm text-neutral-500 dark:text-neutral-400">
-                        Membre depuis {{ user.created_at }}
+
+                <div class="grid gap-3 text-sm text-neutral-600 dark:text-neutral-300">
+                    <p><span class="font-medium text-neutral-800 dark:text-neutral-100">Âge :</span> {{ user.age }} ans</p>
+                    <p>
+                        <span class="font-medium text-neutral-800 dark:text-neutral-100">Localisation :</span>
+                        {{ user.country || 'Non renseignée' }}
+                    </p>
+                    <p v-if="user.city">
+                        <span class="font-medium text-neutral-800 dark:text-neutral-100">Ville :</span> {{ user.city }}
                     </p>
                 </div>
             </div>
-
-            <div class="grid gap-3 text-sm text-neutral-600 dark:text-neutral-300">
-                <p><span class="font-medium text-neutral-800 dark:text-neutral-100">Âge :</span> {{ user.age }} ans</p>
-                <p>
-                    <span class="font-medium text-neutral-800 dark:text-neutral-100">Localisation :</span>
-                    {{ user.country || 'Non renseignée' }}
-                </p>
-                <p v-if="user.city">
-                    <span class="font-medium text-neutral-800 dark:text-neutral-100">Ville :</span> {{ user.city }}
-                </p>
-            </div>
-        </div>
-    </section>
+        </section>
+    </AppHeaderLayout>
 </template>
