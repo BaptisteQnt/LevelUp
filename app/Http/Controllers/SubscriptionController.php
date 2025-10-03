@@ -25,6 +25,7 @@ class SubscriptionController extends Controller
         abort_unless($price, 400, 'Missing price');
 
         $checkout = $request->user()
+
             ->newSubscription('default', $price)
             ->allowPromotionCodes()
             ->checkout([
@@ -33,6 +34,7 @@ class SubscriptionController extends Controller
             ]);
 
         $redirectResponse = $checkout->redirect();
+
 
         if ($request->inertia()) {
             return Inertia::location($redirectResponse->getTargetUrl());
