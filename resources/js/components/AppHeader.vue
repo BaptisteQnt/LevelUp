@@ -89,7 +89,10 @@ const closeMobileMenu = () => {
                 </Link>
             </div>
 
-            <nav class="hidden items-center gap-6 text-sm font-medium lg:flex" aria-label="Navigation principale">
+            <nav
+                class="hidden items-center gap-6 text-sm font-medium text-white lg:flex"
+                aria-label="Navigation principale"
+            >
                 <Link
                     v-for="item in mainNavItems"
                     :key="item.title"
