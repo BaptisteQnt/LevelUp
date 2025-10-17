@@ -197,7 +197,7 @@ const closeMobileMenu = () => {
             </div>
         </div>
 
-        <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-t border-sidebar-border/70 bg-white/60 dark:bg-neutral-950/60">
+        <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-t border-sidebar-border/70 bg-white dark:bg-white">
             <div class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </div>
