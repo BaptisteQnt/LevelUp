@@ -70,7 +70,7 @@ const closeMobileMenu = () => {
 </script>
 
 <template>
-    <div class="border-b border-[#0E6BA8]/40 bg-[#001C55] text-white backdrop-blur dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white">
+    <div class="border-b border-[#0E6BA8]/40 bg-[#001C55] text-[#0E6BA8] backdrop-blur dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white">
         <div class="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
             <div class="flex items-center gap-2">
                 <button
@@ -98,7 +98,7 @@ const closeMobileMenu = () => {
                     :class="
                         (item.isActive ?? isActive(item.href))
                             ? 'font-semibold text-white dark:text-white'
-                            : 'text-white hover:text-white/80 dark:text-white/80 dark:hover:text-white'
+                            : 'text-[#0E6BA8] hover:text-white dark:text-white/80 dark:hover:text-white'
                     "
                 >
                     {{ item.title }}
@@ -132,7 +132,7 @@ const closeMobileMenu = () => {
         <div
             v-if="mobileMenuOpen"
             id="primary-navigation"
-            class="border-t border-[#0E6BA8]/40 bg-[#001C55] px-4 py-4 text-white shadow-lg lg:hidden dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white"
+            class="border-t border-[#0E6BA8]/40 bg-[#001C55] px-4 py-4 text-[#0E6BA8] shadow-lg lg:hidden dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white"
         >
             <div class="flex flex-col gap-3 text-base font-medium">
                 <Link
@@ -143,7 +143,7 @@ const closeMobileMenu = () => {
                     :class="
                         (item.isActive ?? isActive(item.href))
                             ? 'bg-[#0E6BA8]/30 font-semibold text-white dark:bg-[#0E6BA8]/40 dark:text-white'
-                            : 'text-white dark:text-white/80'
+                            : 'text-[#0E6BA8] dark:text-white/80'
                     "
                     @click="closeMobileMenu"
                 >
@@ -173,12 +173,12 @@ const closeMobileMenu = () => {
                                     ({{ premiumAlias }})
                                 </span>
                             </span>
-                            <span class="text-white/80 dark:text-white/80">{{ user?.email }}</span>
+                            <span class="text-[#0E6BA8] dark:text-white/80">{{ user?.email }}</span>
                         </div>
                     </div>
                     <Link
                         :href="route('profile.edit')"
-                        class="rounded-lg border border-[#0E6BA8]/60 px-3 py-2 text-center font-medium text-white transition hover:bg-[#0E6BA8]/10 dark:border-white/50 dark:text-white dark:hover:bg-[#0E6BA8]/30"
+                        class="rounded-lg border border-[#0E6BA8]/60 px-3 py-2 text-center font-medium text-[#0E6BA8] transition hover:bg-[#0E6BA8]/10 dark:border-white/50 dark:text-white dark:hover:bg-[#0E6BA8]/30"
                         @click="closeMobileMenu"
                     >
                         Mon profil
