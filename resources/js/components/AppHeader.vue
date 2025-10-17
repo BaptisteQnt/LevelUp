@@ -70,12 +70,12 @@ const closeMobileMenu = () => {
 </script>
 
 <template>
-    <div class="border-b border-sidebar-border/80 bg-white/80 backdrop-blur dark:bg-neutral-950/70">
+    <div class="border-b border-[#0E6BA8]/40 bg-[#001C55] text-white backdrop-blur dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white">
         <div class="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
             <div class="flex items-center gap-2">
                 <button
                     type="button"
-                    class="inline-flex items-center justify-center rounded-md p-2 text-neutral-700 transition hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary lg:hidden dark:text-neutral-200 dark:hover:bg-neutral-800"
+                    class="inline-flex items-center justify-center rounded-md p-2 transition hover:bg-[#0E6BA8]/10 focus:outline-none focus:ring-2 focus:ring-primary lg:hidden"
                     :aria-expanded="mobileMenuOpen"
                     aria-controls="primary-navigation"
                     @click="toggleMobileMenu"
@@ -85,17 +85,24 @@ const closeMobileMenu = () => {
                     <X v-else class="h-6 w-6" />
                 </button>
                 <Link :href="route('home')" class="flex items-center gap-2" @click="closeMobileMenu">
-                    <AppLogo />
+                    <AppLogo text-class="text-white" />
                 </Link>
             </div>
 
-            <nav class="hidden items-center gap-6 text-sm font-medium lg:flex" aria-label="Navigation principale">
+            <nav
+                class="hidden items-center gap-6 text-sm font-medium text-white lg:flex"
+                aria-label="Navigation principale"
+            >
                 <Link
                     v-for="item in mainNavItems"
                     :key="item.title"
                     :href="item.href"
-                    class="transition hover:text-primary"
-                    :class="(item.isActive ?? isActive(item.href)) ? 'text-primary' : 'text-neutral-600 dark:text-neutral-300'"
+                    class="transition"
+                    :class="
+                        (item.isActive ?? isActive(item.href))
+                            ? 'font-semibold text-white dark:text-white'
+                            : 'text-white hover:text-white/80 dark:text-white/80 dark:hover:text-white'
+                    "
                 >
                     {{ item.title }}
                 </Link>
@@ -110,7 +117,7 @@ const closeMobileMenu = () => {
                     <DropdownMenuTrigger as-child>
                         <button
                             type="button"
-                            class="flex items-center gap-2 rounded-full border border-sidebar-border/80 p-1.5 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                            class="flex items-center gap-2 rounded-full border border-[#0E6BA8]/60 p-1.5 transition hover:border-white focus:outline-none focus:ring-2 focus:ring-primary dark:border-white/50"
                         >
                             <Avatar class="size-8" :class="avatarBorderClass">
                                 <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
@@ -128,15 +135,19 @@ const closeMobileMenu = () => {
         <div
             v-if="mobileMenuOpen"
             id="primary-navigation"
-            class="border-t border-sidebar-border/80 bg-white/95 px-4 py-4 shadow-lg lg:hidden dark:bg-neutral-950/95"
+            class="border-t border-[#0E6BA8]/40 bg-[#001C55] px-4 py-4 text-white shadow-lg lg:hidden dark:border-[#A6E1FA]/40 dark:bg-[#001C55] dark:text-white"
         >
             <div class="flex flex-col gap-3 text-base font-medium">
                 <Link
                     v-for="item in mainNavItems"
                     :key="item.title"
                     :href="item.href"
-                    class="rounded-lg px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                    :class="(item.isActive ?? isActive(item.href)) ? 'bg-neutral-100 font-semibold dark:bg-neutral-800' : 'text-neutral-700 dark:text-neutral-200'"
+                    class="rounded-lg px-3 py-2 transition hover:bg-[#0E6BA8]/20"
+                    :class="
+                        (item.isActive ?? isActive(item.href))
+                            ? 'bg-[#0E6BA8]/30 font-semibold text-white dark:bg-[#0E6BA8]/40 dark:text-white'
+                            : 'text-white dark:text-white/80'
+                    "
                     @click="closeMobileMenu"
                 >
                     {{ item.title }}
@@ -149,7 +160,7 @@ const closeMobileMenu = () => {
                 >
                     Connexion
                 </Link>
-                <div v-else class="flex flex-col gap-3 rounded-lg border border-sidebar-border/70 p-3">
+                <div v-else class="flex flex-col gap-3 rounded-lg border border-[#0E6BA8]/50 p-3 dark:border-white/40">
                     <div class="flex items-center gap-3">
                         <Avatar class="size-10" :class="avatarBorderClass">
                             <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
@@ -157,7 +168,7 @@ const closeMobileMenu = () => {
                         </Avatar>
                         <div class="flex flex-col text-sm">
                             <span
-                                class="font-semibold text-neutral-900 dark:text-neutral-100"
+                                class="font-semibold text-[#001C55] dark:text-[#A6E1FA]"
                                 :style="premiumNameColor ? { color: premiumNameColor } : undefined"
                             >
                                 {{ user?.name }}
@@ -165,12 +176,12 @@ const closeMobileMenu = () => {
                                     ({{ premiumAlias }})
                                 </span>
                             </span>
-                            <span class="text-neutral-500 dark:text-neutral-400">{{ user?.email }}</span>
+                            <span class="text-white/80 dark:text-white/80">{{ user?.email }}</span>
                         </div>
                     </div>
                     <Link
                         :href="route('profile.edit')"
-                        class="rounded-lg border border-sidebar-border/80 px-3 py-2 text-center font-medium text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        class="rounded-lg border border-[#0E6BA8]/60 px-3 py-2 text-center font-medium text-white transition hover:bg-[#0E6BA8]/10 dark:border-white/50 dark:text-white dark:hover:bg-[#0E6BA8]/30"
                         @click="closeMobileMenu"
                     >
                         Mon profil
@@ -189,7 +200,7 @@ const closeMobileMenu = () => {
             </div>
         </div>
 
-        <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-t border-sidebar-border/70 bg-white/60 dark:bg-neutral-950/60">
+        <div v-if="props.breadcrumbs.length > 1" class="flex w-full border-t border-sidebar-border/70 bg-white dark:bg-white">
             <div class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </div>
