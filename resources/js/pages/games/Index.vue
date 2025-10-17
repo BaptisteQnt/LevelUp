@@ -208,14 +208,14 @@ const clearSearch = () => {
     <AppHeaderLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto max-w-5xl px-4 py-10">
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h1 class="text-3xl font-bold">{{ pageText.title }}</h1>
+                <h1 class="text-3xl font-bold text-[#001C55] dark:text-[#A6E1FA]">{{ pageText.title }}</h1>
                 <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
-                    <span class="text-sm font-medium text-gray-600 dark:text-neutral-300">{{ pageText.languageLabel }}</span>
+                    <span class="text-sm font-medium text-[#0E6BA8] dark:text-white">{{ pageText.languageLabel }}</span>
                     <div class="flex items-center gap-2">
                         <span class="text-2xl leading-none" aria-hidden="true">{{ selectedLanguageConfig.flag }}</span>
                         <select
                             v-model="selectedLanguage"
-                            class="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                            class="rounded-lg border border-[#0E6BA8] bg-white px-3 py-2 text-sm font-medium text-[#0E6BA8] shadow-sm focus:border-[#0E6BA8] focus:outline-none focus:ring-2 focus:ring-[#0E6BA8]/60 dark:border-[#A6E1FA] dark:bg-[#001C55] dark:text-white"
                             :aria-label="pageText.languageLabel"
                         >
                             <option v-for="language in languages" :key="language.value" :value="language.value">
@@ -225,7 +225,7 @@ const clearSearch = () => {
                     </div>
                 </div>
             </div>
-            <p class="mb-8 text-sm text-gray-500 dark:text-neutral-400">{{ pageText.languageNotice }}</p>
+            <p class="mb-8 text-sm text-[#0E6BA8] dark:text-white/80">{{ pageText.languageNotice }}</p>
 
             <form class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center" @submit.prevent="submitSearch">
                 <label class="sr-only" for="game-search">Rechercher un jeu</label>
@@ -235,7 +235,7 @@ const clearSearch = () => {
                     type="search"
                     name="search"
                     :placeholder="selectedLanguage.value === 'fr' ? 'Rechercher un jeu…' : 'Search a game…'"
-                    class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/60 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+                    class="flex-1 rounded-lg border border-[#0E6BA8] bg-white px-3 py-2 text-sm text-[#0E6BA8] shadow-sm focus:border-[#0E6BA8] focus:outline-none focus:ring-2 focus:ring-[#0E6BA8]/60 dark:border-[#A6E1FA] dark:bg-[#001C55] dark:text-white"
                     :disabled="isSearching"
                 />
                 <div class="flex items-center gap-2">
@@ -249,7 +249,7 @@ const clearSearch = () => {
                     <button
                         v-if="hasActiveSearch"
                         type="button"
-                        class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                        class="inline-flex items-center rounded-lg border border-[#0E6BA8] px-4 py-2 text-sm font-semibold text-[#0E6BA8] transition hover:bg-[#0E6BA8]/10 dark:border-[#A6E1FA] dark:text-white dark:hover:bg-[#0E6BA8]/30"
                         @click="clearSearch"
                     >
                         {{ selectedLanguage.value === 'fr' ? 'Réinitialiser' : 'Reset' }}
@@ -257,18 +257,21 @@ const clearSearch = () => {
                 </div>
             </form>
 
-            <p v-if="searchMessage" class="mb-6 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary dark:border-primary/40 dark:bg-primary/15">
+            <p
+                v-if="searchMessage"
+                class="mb-6 rounded-lg border border-[#0E6BA8]/40 bg-[#A6E1FA]/40 px-4 py-3 text-sm text-[#001C55] dark:border-[#A6E1FA]/40 dark:bg-[#001C55]/80 dark:text-white"
+            >
                 {{ searchMessage }}
             </p>
             <p
                 v-else-if="hasActiveSearch && games.data.length === 0"
-                class="mb-6 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 dark:border-neutral-700 dark:text-neutral-300"
+                class="mb-6 rounded-lg border border-dashed border-[#0E6BA8]/60 px-4 py-3 text-sm text-[#0E6BA8] dark:border-[#A6E1FA]/60 dark:text-white"
             >
                 {{ selectedLanguage.value === 'fr' ? 'Aucun jeu ne correspond à votre recherche pour le moment.' : 'No game matches your search yet.' }}
             </p>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div v-for="game in games.data" :key="game.id" class="rounded-lg bg-white p-4 shadow">
+                <div v-for="game in games.data" :key="game.id" class="rounded-lg bg-[#A6E1FA] p-4 shadow dark:bg-[#001C55]">
                     <img
                         v-if="game.cover_url"
                         :src="`https:${game.cover_url.replace('t_thumb', 't_cover_big')}`"
@@ -277,12 +280,12 @@ const clearSearch = () => {
                     />
                     <Link
                         :href="route('games.show', { slug: game.slug, lang: selectedLanguage })"
-                        class="text-xl font-semibold text-blue-600 hover:underline"
+                        class="text-xl font-semibold text-[#001C55] hover:underline dark:text-[#A6E1FA]"
                     >
                         {{ game.title }}
                     </Link>
 
-                    <p class="text-sm text-gray-600" v-if="game.storyline || game.summary || game.description">
+                    <p class="text-sm text-[#0E6BA8] dark:text-white" v-if="game.storyline || game.summary || game.description">
                         {{ game.storyline ?? game.summary ?? game.description }}
                     </p>
                 </div>
@@ -299,14 +302,14 @@ const clearSearch = () => {
                             class="inline-flex items-center rounded-md border px-3 py-1 text-sm font-medium transition"
                             :class="[
                                 link.active
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800',
+                                    ? 'border-[#0E6BA8] bg-[#0E6BA8] text-white dark:border-[#A6E1FA] dark:bg-[#0E6BA8] dark:text-white'
+                                    : 'border-[#0E6BA8] bg-white text-[#0E6BA8] hover:bg-[#A6E1FA]/40 dark:border-[#A6E1FA] dark:bg-[#001C55] dark:text-white dark:hover:bg-[#0E6BA8]/30',
                             ]"
                             v-html="link.label"
                         />
                         <span
                             v-else
-                            class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1 text-sm font-medium text-gray-400 dark:border-neutral-800 dark:text-neutral-600"
+                            class="inline-flex items-center rounded-md border border-[#0E6BA8]/40 px-3 py-1 text-sm font-medium text-[#0E6BA8]/60 dark:border-[#A6E1FA]/40 dark:text-white/60"
                             v-html="link.label"
                         />
                     </li>
