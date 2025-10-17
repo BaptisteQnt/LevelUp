@@ -85,7 +85,7 @@ const closeMobileMenu = () => {
                     <X v-else class="h-6 w-6" />
                 </button>
                 <Link :href="route('home')" class="flex items-center gap-2" @click="closeMobileMenu">
-                    <AppLogo />
+                    <AppLogo text-class="text-white" />
                 </Link>
             </div>
 
