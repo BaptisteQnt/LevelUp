@@ -49,22 +49,16 @@ const initTarteaucitron = () => {
 
     window.dataLayer = window.dataLayer || [];
 
-    window.tarteaucitronForceLanguage = 'fr';
+    window.tarteaucitronForceLanguage = document.documentElement.lang || 'en';
 
     window.tarteaucitronCustomText = {
-        alertBigPrivacy:
-            'Nous respectons votre vie privée et n\'activons les services optionnels qu\'avec votre accord.',
-        acceptAll: 'Tout accepter',
-        denyAll: 'Tout refuser',
-        personalize: 'Personnaliser',
-        close: 'Fermer',
-        moreInfo: 'En savoir plus',
-        disclaimer:
-            'Certains services nécessitent l\'utilisation de cookies pour fonctionner. Vous pouvez modifier vos préférences à tout moment.',
-        readmoreLink: 'Consulter notre politique de confidentialité',
-        mandatoryTitle: 'Cookies strictement nécessaires',
-        mandatoryText:
-            'Ces cookies sont indispensables au bon fonctionnement du site et sont activés par défaut.',
+        alertBigPrivacy: 'We value your privacy and only activate optional cookies after your consent.',
+        acceptAll: 'Accept all cookies',
+        personalize: 'Manage preferences',
+        close: 'Close banner',
+        moreInfo: 'Learn more',
+        disclaimer: 'Some services need your consent to load. Adjust your preferences whenever you like.',
+        readmoreLink: 'View our cookie policy',
     };
 
     window.tarteaucitron.init({
