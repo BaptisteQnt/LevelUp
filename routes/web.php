@@ -96,7 +96,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
     Route::get('/admin/privacy/requests', [AdminDataErasureRequestController::class, 'index'])->name('admin.privacy.requests.index');
     Route::patch('/admin/privacy/requests/{dataErasureRequest}', [AdminDataErasureRequestController::class, 'update'])->name('admin.privacy.requests.update');
-    Route::delete('/admin/privacy/requests/{dataErasureRequest}/user', [AdminDataErasureRequestController::class, 'destroyUser'])->name('admin.privacy.requests.destroy_user');
 });
 
 use App\Http\Controllers\Auth\SocialiteController;
