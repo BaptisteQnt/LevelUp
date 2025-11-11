@@ -81,6 +81,34 @@ const updateRequest = (id: number) => {
         preserveScroll: true,
     });
 };
+
+const confirmAccountDeletion = (request: DataRequest) => {
+    if (
+        !confirm(
+            "Êtes-vous sûr de vouloir supprimer définitivement ce compte utilisateur ? Cette action est irréversible et entraînera la suppression de toutes les données associées.",
+        )
+    ) {
+        return;
+    }
+
+    router.post(route('admin.privacy.requests.destroy-account', request.id), {}, {
+        preserveScroll: true,
+    });
+};
+
+const anonymizePersonalData = (request: DataRequest) => {
+    if (
+        !confirm(
+            "Confirmez-vous l'anonymisation des données personnelles pour cet utilisateur ? Les informations sensibles seront effacées sans supprimer le compte.",
+        )
+    ) {
+        return;
+    }
+
+    router.post(route('admin.privacy.requests.erase-data', request.id), {}, {
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -165,6 +193,22 @@ const updateRequest = (id: number) => {
                                     class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
                                 >
                                     Enregistrer les modifications
+                                </button>
+                                <button
+                                    v-if="request.request_type === 'account_deletion'"
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                                    @click="confirmAccountDeletion(request)"
+                                >
+                                    Supprimer le compte
+                                </button>
+                                <button
+                                    v-if="request.request_type === 'data_deletion'"
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+                                    @click="anonymizePersonalData(request)"
+                                >
+                                    Supprimer les données personnelles
                                 </button>
                             </div>
                         </form>
