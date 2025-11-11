@@ -4,13 +4,20 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/composables/useInitials';
 import { useActiveLink } from '@/composables/useActiveLink';
 import { isPremiumUser, resolveAlias, resolveBorderClass, resolveNameColor } from '@/lib/premium';
 import type { BreadcrumbItem, NavItem, SharedData, User } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Menu, X } from 'lucide-vue-next';
+import { ChevronDown, Menu, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -67,6 +74,35 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
     mobileMenuOpen.value = false;
 };
+
+const adminNavItems = computed<NavItem[]>(() => {
+    if (!page.props.auth.user?.is_admin) {
+        return [];
+    }
+
+    return [
+        {
+            title: 'Dashboard',
+            href: route('dashboard'),
+        },
+        {
+            title: 'Modération',
+            href: route('admin.moderation.index'),
+        },
+        {
+            title: 'Pouvoirs',
+            href: route('admin.powers.index'),
+        },
+        {
+            title: 'Annonces',
+            href: route('admin.announcements.index'),
+        },
+        {
+            title: 'Demandes RGPD',
+            href: route('admin.privacy.requests.index'),
+        },
+    ];
+});
 </script>
 
 <template>
@@ -113,22 +149,44 @@ const closeMobileMenu = () => {
                 >
                     Connexion
                 </Link>
-                <DropdownMenu v-else>
-                    <DropdownMenuTrigger as-child>
-                        <button
-                            type="button"
-                            class="flex items-center gap-2 rounded-full border border-[#0E6BA8]/60 p-1.5 transition hover:border-white focus:outline-none focus:ring-2 focus:ring-primary dark:border-white/50"
-                        >
-                            <Avatar class="size-8" :class="avatarBorderClass">
-                                <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
-                                <AvatarFallback>{{ userInitials }}</AvatarFallback>
-                            </Avatar>
-                        </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent class="min-w-64" align="end" :side-offset="12">
-                        <UserMenuContent :user="user" />
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <template v-else>
+                    <DropdownMenu v-if="adminNavItems.length">
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                class="inline-flex items-center gap-2 rounded-lg border border-[#0E6BA8]/60 px-3 py-2 font-semibold text-[#0E6BA8] transition hover:border-white hover:bg-[#0E6BA8]/10 focus:outline-none focus:ring-2 focus:ring-primary dark:border-white/50 dark:text-white"
+                            >
+                                <span>Administration</span>
+                                <ChevronDown class="h-4 w-4" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent class="min-w-56" align="end" :side-offset="12">
+                            <DropdownMenuLabel>Accès administrateur</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem v-for="item in adminNavItems" :key="item.title" :as-child="true">
+                                <Link :href="item.href" class="flex items-center justify-between gap-2">
+                                    <span>{{ item.title }}</span>
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                class="flex items-center gap-2 rounded-full border border-[#0E6BA8]/60 p-1.5 transition hover:border-white focus:outline-none focus:ring-2 focus:ring-primary dark:border-white/50"
+                            >
+                                <Avatar class="size-8" :class="avatarBorderClass">
+                                    <AvatarImage v-if="userHasAvatar" :src="user?.avatar" :alt="user?.name" />
+                                    <AvatarFallback>{{ userInitials }}</AvatarFallback>
+                                </Avatar>
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent class="min-w-64" align="end" :side-offset="12">
+                            <UserMenuContent :user="user" />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </template>
             </nav>
         </div>
 
@@ -196,6 +254,20 @@ const closeMobileMenu = () => {
                     >
                         Déconnexion
                     </Link>
+                </div>
+                <div v-if="adminNavItems.length" class="rounded-lg border border-[#0E6BA8]/50 p-3 text-[#0E6BA8] dark:border-white/40 dark:text-white">
+                    <p class="text-sm font-semibold">Administration</p>
+                    <div class="mt-2 flex flex-col gap-2">
+                        <Link
+                            v-for="item in adminNavItems"
+                            :key="`mobile-admin-${item.title}`"
+                            :href="item.href"
+                            class="rounded-md px-3 py-2 text-sm transition hover:bg-[#0E6BA8]/20 dark:hover:bg-white/10"
+                            @click="closeMobileMenu"
+                        >
+                            {{ item.title }}
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
