@@ -3,7 +3,7 @@ import AppHeaderLayout from '@/layouts/app/AppHeaderLayout.vue';
 import { fetchDashboardStats, type DashboardStats } from '@/lib/stats';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { MessageSquare, Megaphone, ShieldCheck } from 'lucide-vue-next';
+import { MessageSquare, Megaphone, ShieldCheck, UserMinus } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch, type Component } from 'vue';
 
 interface AdminAction {
@@ -53,6 +53,12 @@ const adminLinks = computed<AdminAction[]>(() => [
         description: 'Publie des messages importants pour informer toute la communauté.',
         href: route('admin.announcements.index'),
         icon: Megaphone,
+    },
+    {
+        title: 'Demandes RGPD',
+        description: 'Traite les requêtes de suppression de compte et de données personnelles.',
+        href: route('admin.privacy.requests.index'),
+        icon: UserMinus,
     },
 ]);
 

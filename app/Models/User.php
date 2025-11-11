@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Cashier\Billable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -74,9 +75,29 @@ class User extends Authenticatable
         return $this->hasMany(GameRating::class);
     }
 
+    public function tips(): HasMany
+    {
+        return $this->hasMany(Tip::class);
+    }
+
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    public function tipReactions(): HasMany
+    {
+        return $this->hasMany(TipReaction::class);
+    }
+
     public function oauthAccounts()
     {
         return $this->hasMany(OauthAccount::class);
+    }
+
+    public function dataErasureRequests(): HasMany
+    {
+        return $this->hasMany(DataErasureRequest::class);
     }
 
     public function getIsSubscribedAttribute(): bool
