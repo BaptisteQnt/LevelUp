@@ -18,6 +18,9 @@ use Laravel\Cashier\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use App\Models\Announcement;
 use App\Models\Game;
+use App\Http\Controllers\LegalController;
+use App\Http\Controllers\DataErasureRequestController;
+use App\Http\Controllers\Admin\DataErasureRequestController as AdminDataErasureRequestController;
 
 
 $dashboardPage = function (Request $request) {
@@ -91,6 +94,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/announcements', [AnnouncementController::class, 'index'])->name('admin.announcements.index');
     Route::post('/admin/announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
     Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
+    Route::get('/admin/privacy/requests', [AdminDataErasureRequestController::class, 'index'])->name('admin.privacy.requests.index');
+    Route::patch('/admin/privacy/requests/{dataErasureRequest}', [AdminDataErasureRequestController::class, 'update'])->name('admin.privacy.requests.update');
 });
 
 use App\Http\Controllers\Auth\SocialiteController;
@@ -126,6 +131,8 @@ Route::middleware(['auth','verified','subscribed'])
 
 Route::get('/information', fn () => Inertia::render('Information'))->name('information');
 Route::get('/presentation', fn () => Inertia::render('Presentation'))->name('presentation');
+Route::get('/mentions-legales', [LegalController::class, 'mentions'])->name('legal.mentions');
+Route::middleware('auth')->post('/mentions-legales/demandes', [DataErasureRequestController::class, 'store'])->name('legal.requests.store');
 
 
 require __DIR__.'/settings.php';
