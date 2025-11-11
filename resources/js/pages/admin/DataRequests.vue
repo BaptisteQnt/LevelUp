@@ -3,7 +3,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
-import { Trash2 } from 'lucide-vue-next';
 
 type DataRequest = {
     id: number;
@@ -49,8 +48,8 @@ const statusOptions: { value: DataRequest['status']; label: string }[] = [
 ];
 
 const typeLabels: Record<DataRequest['request_type'], string> = {
-    account_deletion: 'Suppression du compte et des données personnelles',
-    data_deletion: 'Suppression du compte et des données personnelles',
+    account_deletion: 'Suppression du compte',
+    data_deletion: 'Suppression des données personnelles',
 };
 
 const initialForms = Object.fromEntries(
@@ -80,21 +79,6 @@ const updateRequest = (id: number) => {
 
     router.patch(route('admin.privacy.requests.update', id), payload, {
         preserveScroll: true,
-    });
-};
-
-const deleteAccount = (id: number) => {
-    const confirmation = confirm(
-        'Confirmez-vous la suppression définitive du compte, de toutes ses données personnelles et de ses interactions (commentaires, likes, notes) ? Cette action est irréversible.',
-    );
-
-    if (!confirmation) {
-        return;
-    }
-
-    router.delete(route('admin.privacy.requests.destroy_user', id), {
-        preserveScroll: true,
-        preserveState: false,
     });
 };
 </script>
@@ -148,40 +132,7 @@ const deleteAccount = (id: number) => {
                             </p>
                         </div>
 
-                        <form class="flex-1 space-y-5" @submit.prevent="updateRequest(request.id)">
-                            <section
-                                class="space-y-4 rounded-xl border border-red-200 bg-red-50 p-5 text-red-900 shadow-sm dark:border-red-800/80 dark:bg-red-950/40 dark:text-red-100"
-                            >
-                                <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                    <div class="flex items-start gap-3">
-                                        <span
-                                            class="flex size-10 items-center justify-center rounded-full bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-200"
-                                        >
-                                            <Trash2 class="size-5" aria-hidden="true" />
-                                        </span>
-                                        <div class="space-y-1">
-                                            <p class="text-xs font-semibold uppercase tracking-wide">Suppression définitive</p>
-                                            <p class="text-sm text-red-800 dark:text-red-100/80">
-                                                Supprime immédiatement le compte, toutes les données personnelles et l'ensemble
-                                                des interactions associées.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
-                                        @click="deleteAccount(request.id)"
-                                    >
-                                        <Trash2 class="size-4" aria-hidden="true" />
-                                        Supprimer le compte et les données personnelles
-                                    </button>
-                                </header>
-                                <p class="text-xs text-red-700/80 dark:text-red-200/70">
-                                    Action irréversible : aucune restauration ne sera possible après la confirmation.
-                                </p>
-                            </section>
-
+                        <form class="flex-1 space-y-4" @submit.prevent="updateRequest(request.id)">
                             <div class="space-y-2">
                                 <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-neutral-300">
                                     Statut de la demande
@@ -208,12 +159,14 @@ const deleteAccount = (id: number) => {
                                 ></textarea>
                             </div>
 
-                            <button
-                                type="submit"
-                                class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-                            >
-                                Enregistrer les modifications
-                            </button>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button
+                                    type="submit"
+                                    class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                                >
+                                    Enregistrer les modifications
+                                </button>
+                            </div>
                         </form>
                     </li>
                 </ul>

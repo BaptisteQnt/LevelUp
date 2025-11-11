@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\DataErasureRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DataErasureRequestController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'details' => ['nullable', 'string', 'max:2000'],
+            'request_type' => ['required', Rule::in(['account_deletion', 'data_deletion'])],
+            'details'      => ['nullable', 'string', 'max:2000'],
         ]);
 
         /** @var \App\Models\User $user */
@@ -19,7 +21,7 @@ class DataErasureRequestController extends Controller
 
         DataErasureRequest::create([
             'user_id'      => $user->id,
-            'request_type' => 'account_deletion',
+            'request_type' => $validated['request_type'],
             'details'      => $validated['details'] ?? null,
             'status'       => 'pending',
         ]);
