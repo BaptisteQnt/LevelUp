@@ -3,8 +3,6 @@ import AppContent from '@/components/AppContent.vue';
 import AppFooter from '@/components/AppFooter.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
-import AppSidebar from '@/components/AppSidebar.vue';
-import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -17,16 +15,12 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <AppShell variant="sidebar">
+    <AppShell variant="header">
         <div class="flex min-h-screen w-full flex-col">
-            <AppHeader />
-            <div class="flex flex-1">
-                <AppSidebar />
-                <AppContent variant="sidebar">
-                    <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-                    <slot />
-                </AppContent>
-            </div>
+            <AppHeader :breadcrumbs="breadcrumbs" />
+            <AppContent class="w-full px-4 py-6 md:px-6 lg:px-8">
+                <slot />
+            </AppContent>
             <AppFooter />
         </div>
     </AppShell>
