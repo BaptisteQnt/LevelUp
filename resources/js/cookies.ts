@@ -4,6 +4,8 @@ interface TarteaucitronGlobal extends Record<string, unknown> {
     init: (options: Record<string, unknown>) => void;
     job: string[];
     user: Record<string, unknown>;
+    lang?: Record<string, string>;
+    services?: Record<string, Record<string, unknown>>;
 }
 
 declare global {
@@ -42,6 +44,47 @@ const loadTarteaucitron = (): Promise<void> => {
     });
 };
 
+const FRENCH_BANNER_COPY: Record<string, string> = {
+    alertBigTitle: 'Gestion des cookies',
+    alertBigPrivacy:
+        'Nous respectons votre vie privée. Choisissez les cookies que vous souhaitez activer pour bénéficier d\'une expérience sur mesure.',
+    alertBigScroll: 'En continuant à parcourir notre site, vous acceptez l\'utilisation des cookies sélectionnés.',
+    alertBigClick: 'En poursuivant votre navigation, vous acceptez l\'utilisation des cookies sélectionnés.',
+    acceptAll: 'Tout accepter',
+    denyAll: 'Tout refuser',
+    personalize: 'Personnaliser',
+    close: 'Fermer',
+    save: 'Enregistrer mes choix',
+    moreInfo: 'En savoir plus',
+    readmoreLink: 'Consulter notre politique de confidentialité',
+    mandatoryTitle: 'Cookies strictement nécessaires',
+    mandatoryText:
+        'Ces cookies garantissent le fonctionnement de base du site (connexion, sécurité, accessibilité) et ne peuvent pas être désactivés.',
+    alertSmall: 'Gestion des cookies',
+    cookieslist: 'Liste des cookies',
+    disclaimer:
+        'Certains services nécessitent des cookies pour fonctionner correctement. Vous pouvez modifier vos préférences à tout moment.',
+    purpose: 'Finalité',
+    usePersonalizedAds: 'Utiliser des publicités personnalisées',
+    useNonPersonalizedAds: 'Utiliser des publicités non personnalisées',
+    consentModalTitle: 'Gestion personnalisée',
+    consentModalText:
+        'Activez ou désactivez librement les services selon vos préférences. Vos choix seront enregistrés pendant 6 mois.',
+};
+
+const configureFrenchLocale = (tarteaucitron: TarteaucitronGlobal) => {
+    tarteaucitron.lang = {
+        ...tarteaucitron.lang,
+        ...FRENCH_BANNER_COPY,
+    };
+
+    window.tarteaucitronCustomText = {
+        ...FRENCH_BANNER_COPY,
+    };
+
+    window.tarteaucitronForceLanguage = 'fr';
+};
+
 const initTarteaucitron = () => {
     if (!window.tarteaucitron) {
         return;
@@ -49,17 +92,7 @@ const initTarteaucitron = () => {
 
     window.dataLayer = window.dataLayer || [];
 
-    window.tarteaucitronForceLanguage = document.documentElement.lang || 'en';
-
-    window.tarteaucitronCustomText = {
-        alertBigPrivacy: 'We value your privacy and only activate optional cookies after your consent.',
-        acceptAll: 'Accept all cookies',
-        personalize: 'Manage preferences',
-        close: 'Close banner',
-        moreInfo: 'Learn more',
-        disclaimer: 'Some services need your consent to load. Adjust your preferences whenever you like.',
-        readmoreLink: 'View our cookie policy',
-    };
+    configureFrenchLocale(window.tarteaucitron);
 
     window.tarteaucitron.init({
         privacyUrl: '/privacy-policy',
@@ -85,10 +118,18 @@ const initTarteaucitron = () => {
 
     window.tarteaucitron.user.googletagmanagerId = 'GTM-TGD3JTXZ';
 
-    const services = ['googletagmanager'];
+    const tarteServices = window.tarteaucitron.services;
+    if (tarteServices?.googletagmanager) {
+        Object.assign(tarteServices.googletagmanager, {
+            name: 'Google Tag Manager',
+            description: "Pilote le déclenchement des balises d'analyse et de marketing LevelUp.",
+        });
+    }
+
+    const consentManagedServices = ['googletagmanager'];
     const job = Array.isArray(window.tarteaucitron.job) ? window.tarteaucitron.job : [];
 
-    services.forEach((service) => {
+    consentManagedServices.forEach((service) => {
         if (!job.includes(service)) {
             job.push(service);
         }
