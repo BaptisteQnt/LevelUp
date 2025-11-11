@@ -6,9 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DataErasureRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Throwable;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -70,40 +68,5 @@ class DataErasureRequestController extends Controller
         return redirect()
             ->back()
             ->with('success', 'La demande a été mise à jour.');
-    }
-
-    public function destroyUser(Request $request, DataErasureRequest $dataErasureRequest): RedirectResponse
-    {
-        $user = $dataErasureRequest->user;
-
-        if (! $user) {
-            return redirect()
-                ->back()
-                ->with('error', 'Le compte associé à cette demande est introuvable ou déjà supprimé.');
-        }
-
-        $username = $user->username;
-
-        try {
-            DB::transaction(function () use ($user) {
-                $user->commentReactions()->delete();
-                $user->tipReactions()->delete();
-                $user->comments()->delete();
-                $user->tips()->delete();
-                $user->ratings()->delete();
-
-                $user->delete();
-            });
-        } catch (Throwable $exception) {
-            report($exception);
-
-            return redirect()
-                ->back()
-                ->with('error', 'Une erreur est survenue lors de la suppression du compte.');
-        }
-
-        return redirect()
-            ->route('admin.privacy.requests.index')
-            ->with('success', sprintf('Le compte @%s et toutes ses interactions ont été supprimés.', $username));
     }
 }

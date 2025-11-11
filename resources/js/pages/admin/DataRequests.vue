@@ -48,8 +48,8 @@ const statusOptions: { value: DataRequest['status']; label: string }[] = [
 ];
 
 const typeLabels: Record<DataRequest['request_type'], string> = {
-    account_deletion: 'Suppression du compte et des données personnelles',
-    data_deletion: 'Suppression du compte et des données personnelles',
+    account_deletion: 'Suppression du compte',
+    data_deletion: 'Suppression des données personnelles',
 };
 
 const initialForms = Object.fromEntries(
@@ -78,20 +78,6 @@ const updateRequest = (id: number) => {
     const payload = forms[id];
 
     router.patch(route('admin.privacy.requests.update', id), payload, {
-        preserveScroll: true,
-    });
-};
-
-const deleteAccount = (id: number) => {
-    const confirmation = confirm(
-        'Confirmez-vous la suppression définitive du compte, de toutes ses données personnelles et de ses interactions (commentaires, likes, notes) ? Cette action est irréversible.',
-    );
-
-    if (!confirmation) {
-        return;
-    }
-
-    router.delete(route('admin.privacy.requests.destroy_user', id), {
         preserveScroll: true,
     });
 };
@@ -179,13 +165,6 @@ const deleteAccount = (id: number) => {
                                     class="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
                                 >
                                     Enregistrer les modifications
-                                </button>
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 dark:border-red-700 dark:bg-red-950/40 dark:text-red-200 dark:hover:bg-red-900/40"
-                                    @click="deleteAccount(request.id)"
-                                >
-                                    Supprimer les données personnelles
                                 </button>
                             </div>
                         </form>

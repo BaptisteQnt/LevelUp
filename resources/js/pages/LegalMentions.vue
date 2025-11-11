@@ -38,6 +38,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
+    request_type: 'account_deletion' as 'account_deletion' | 'data_deletion',
     details: '',
 });
 
@@ -55,8 +56,8 @@ const submit = () => {
 };
 
 const requestTypeLabels: Record<DataRequest['request_type'], string> = {
-    account_deletion: 'Suppression du compte et des données personnelles',
-    data_deletion: 'Suppression du compte et des données personnelles',
+    account_deletion: 'Suppression du compte',
+    data_deletion: 'Suppression des données personnelles',
 };
 
 const statusLabels: Record<DataRequest['status'], string> = {
@@ -119,8 +120,8 @@ const formatDate = (value: string | null) =>
                 <div class="space-y-2">
                     <h2 class="text-2xl font-semibold text-blue-900 dark:text-blue-100">Exercer vos droits</h2>
                     <p class="text-neutral-700 dark:text-neutral-200">
-                        Utilisez le formulaire ci-dessous pour demander la suppression de votre compte et de toutes vos données personnelles. Notre équipe
-                        vous répondra dans les meilleurs délais.
+                        Utilisez le formulaire ci-dessous pour demander la suppression de votre compte ou de vos données personnelles. Notre équipe vous
+                        répondra dans les meilleurs délais.
                     </p>
                 </div>
 
@@ -133,9 +134,20 @@ const formatDate = (value: string | null) =>
 
                 <div v-if="isAuthenticated" class="space-y-6">
                     <form class="space-y-5" @submit.prevent="submit">
-                        <p class="rounded-lg border border-blue-200 bg-white/80 px-4 py-3 text-sm text-neutral-700 shadow-sm dark:border-blue-900/70 dark:bg-blue-950/40 dark:text-neutral-200">
-                            Cette demande provoquera la suppression définitive de votre compte et de l'ensemble de vos données personnelles, y compris vos interactions (commentaires, likes, notes).
-                        </p>
+                        <div class="space-y-2">
+                            <label for="request_type" class="block text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                                Type de demande
+                            </label>
+                            <select
+                                id="request_type"
+                                v-model="form.request_type"
+                                class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100"
+                            >
+                                <option value="account_deletion">Suppression du compte</option>
+                                <option value="data_deletion">Suppression des données personnelles</option>
+                            </select>
+                            <p v-if="form.errors.request_type" class="text-sm text-red-500">{{ form.errors.request_type }}</p>
+                        </div>
 
                         <div class="space-y-2">
                             <label for="details" class="block text-sm font-semibold text-neutral-800 dark:text-neutral-200">
