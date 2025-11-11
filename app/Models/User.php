@@ -75,6 +75,21 @@ class User extends Authenticatable
         return $this->hasMany(GameRating::class);
     }
 
+    public function tips(): HasMany
+    {
+        return $this->hasMany(Tip::class);
+    }
+
+    public function commentReactions(): HasMany
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
+    public function tipReactions(): HasMany
+    {
+        return $this->hasMany(TipReaction::class);
+    }
+
     public function oauthAccounts()
     {
         return $this->hasMany(OauthAccount::class);
