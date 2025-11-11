@@ -199,3 +199,38 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .tarteaucitronAlertBig {
+    background-color: var(--color-card);
+    color: var(--color-card-foreground);
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    max-width: 32rem;
+    font-family: var(--font-sans);
+  }
+
+  .tarteaucitronAlertBig #tarteaucitronDisclaimerAlert {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .tarteaucitronAlertBig button {
+    border-radius: 9999px;
+    font-weight: 600;
+    padding: 0.65rem 1.5rem;
+  }
+
+  #tarteaucitronPersonalize {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+  }
+
+  #tarteaucitronAcceptAll {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border: 2px solid var(--color-primary);
+  }
+}
