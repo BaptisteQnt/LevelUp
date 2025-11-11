@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Cashier\Billable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -77,6 +78,11 @@ class User extends Authenticatable
     public function oauthAccounts()
     {
         return $this->hasMany(OauthAccount::class);
+    }
+
+    public function dataErasureRequests(): HasMany
+    {
+        return $this->hasMany(DataErasureRequest::class);
     }
 
     public function getIsSubscribedAttribute(): bool
