@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Rules\CnilPassword;
 use App\Models\User;
+use App\Rules\CnilPassword;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,28 +32,44 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username',
+            'name' => 'nullable|string|max:255',
+            'username' => 'nullable|string|max:255|unique:users,username',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'cp' => 'nullable|string|max:10',
             'country' => 'nullable|string|max:100',
-            'age' => 'required|integer|min:1|max:120',
-            'password' => ['required', 'confirmed', new CnilPassword()],
+            'age' => 'nullable|integer|min:1|max:120',
+            'password' => ['required', new CnilPassword()],
         ]);
 
+        $username = $request->filled('username')
+            ? Str::slug($request->string('username')->value(), '_')
+            : $this->makeUsernameFrom($request->email);
+
+        if ($username === '') {
+            $username = $this->makeUsernameFrom($request->email);
+        } elseif (User::where('username', $username)->exists()) {
+            $username = $this->makeUsernameUnique($username);
+        }
+
+        $name = $request->filled('name')
+            ? $request->string('name')->value()
+            : Str::title(str_replace(['_', '-'], ' ', $username));
+
+        $age = $request->integer('age') ?? 18;
+
         $user = User::create([
-            'name' => $request->name,
-            'username' => $request->username,
+            'name' => $name,
+            'username' => $username,
             'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'city' => $request->city,
-            'cp' => $request->cp,
-            'country' => $request->country,
-            'age' => $request->age,
+            'phone' => $request->input('phone'),
+            'address' => $request->input('address'),
+            'city' => $request->input('city'),
+            'cp' => $request->input('cp'),
+            'country' => $request->input('country'),
+            'age' => $age,
             'password' => Hash::make($request->password),
         ]);
 
@@ -61,5 +78,29 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return to_route('dashboard');
+    }
+
+    private function makeUsernameFrom(string $email): string
+    {
+        $base = Str::slug(Str::before($email, '@'), '_');
+
+        if ($base === '') {
+            $base = 'joueur';
+        }
+
+        return $this->makeUsernameUnique($base);
+    }
+
+    private function makeUsernameUnique(string $base): string
+    {
+        $username = $base;
+        $suffix = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $base.'_'.$suffix;
+            $suffix++;
+        }
+
+        return $username;
     }
 }
